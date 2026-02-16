@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git -C /c/xampp/htdocs/navcrm log --oneline)",
+      "Bash(git -C /c/xampp/htdocs/navcrm show:*)",
+      "Bash(git -C /c/xampp/htdocs/navcrm log --oneline -5)",
+      "Bash(composer create-project:*)",
+      "Bash(export PATH:*)",
+      "Bash(php -r \"copy\\(''https://getcomposer.org/installer'', ''composer-setup.php''\\);\")",
+      "Bash(php:*)",
+      "Bash(php -r:*)",
+      "Bash(npm install:*)",
+      "Bash(/c/xampp/mysql/bin/mysql:*)",
+      "Bash(ls:*)",
+      "Bash(/c/xampp/php/php artisan test:*)",
+      "Bash(/c/xampp/php/php artisan vendor:publish --tag=sanctum-migrations)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
+    ]
+  }
+}

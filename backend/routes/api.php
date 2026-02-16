@@ -1,0 +1,93 @@
+<?php
+
+use App\Http\Controllers\Api\AccountController;
+use App\Http\Controllers\Api\ActivityController;
+use App\Http\Controllers\Api\AddressController;
+use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\ContactController;
+use App\Http\Controllers\Api\LeadController;
+use App\Http\Controllers\Api\NoteController;
+use App\Http\Controllers\Api\RolePermissionController;
+use App\Http\Controllers\Api\TagController;
+use App\Http\Controllers\Api\UserController;
+use Illuminate\Support\Facades\Route;
+
+/*
+|--------------------------------------------------------------------------
+| API Routes
+|--------------------------------------------------------------------------
+*/
+
+Route::get('/health', function () {
+    return response()->json(['status' => 'ok']);
+});
+
+// Public auth routes
+Route::prefix('auth')->group(function () {
+    Route::post('/register', [AuthController::class, 'register']);
+    Route::post('/login', [AuthController::class, 'login']);
+    Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
+    Route::post('/reset-password', [AuthController::class, 'resetPassword']);
+});
+
+// Protected routes
+Route::middleware(['auth:sanctum', App\Http\Middleware\TenantScope::class])->group(function () {
+    // Auth routes
+    Route::post('/auth/logout', [AuthController::class, 'logout']);
+    Route::get('/auth/me', [AuthController::class, 'me']);
+
+    // Profile routes
+    Route::get('/profile', [UserController::class, 'profile']);
+    Route::put('/profile', [UserController::class, 'updateProfile']);
+    Route::put('/profile/password', [UserController::class, 'updatePassword']);
+
+    // Contacts
+    Route::apiResource('contacts', ContactController::class);
+    Route::post('/contacts/{contact}/sync-tags', [ContactController::class, 'syncTags']);
+    Route::get('/contacts/{contact}/relationships', [ContactController::class, 'relationships']);
+    Route::post('/contacts/{contact}/relationships', [ContactController::class, 'addRelationship']);
+    Route::delete('/contacts/{contact}/relationships/{related}', [ContactController::class, 'removeRelationship']);
+
+    // Accounts
+    Route::apiResource('accounts', AccountController::class);
+    Route::get('/accounts/{account}/contacts', [AccountController::class, 'contacts']);
+    Route::post('/accounts/{account}/contacts', [AccountController::class, 'attachContact']);
+    Route::delete('/accounts/{account}/contacts/{contact}', [AccountController::class, 'detachContact']);
+    Route::get('/accounts/{account}/children', [AccountController::class, 'children']);
+
+    // Account addresses (shallow nested resource)
+    Route::get('/accounts/{account}/addresses', [AddressController::class, 'index']);
+    Route::post('/accounts/{account}/addresses', [AddressController::class, 'store']);
+    Route::put('/addresses/{address}', [AddressController::class, 'update']);
+    Route::delete('/addresses/{address}', [AddressController::class, 'destroy']);
+
+    // Leads
+    Route::apiResource('leads', LeadController::class);
+    Route::post('/leads/{lead}/convert', [LeadController::class, 'convert']);
+    Route::post('/leads/{lead}/sync-tags', [LeadController::class, 'syncTags']);
+
+    // Tags
+    Route::apiResource('tags', TagController::class)->except(['show']);
+
+    // Activities
+    Route::get('/activities', [ActivityController::class, 'index']);
+    Route::post('/activities', [ActivityController::class, 'store']);
+    Route::delete('/activities/{activity}', [ActivityController::class, 'destroy']);
+
+    // Notes
+    Route::get('/notes', [NoteController::class, 'index']);
+    Route::post('/notes', [NoteController::class, 'store']);
+    Route::put('/notes/{note}', [NoteController::class, 'update']);
+    Route::delete('/notes/{note}', [NoteController::class, 'destroy']);
+
+    // Admin routes
+    Route::middleware(['role:admin'])->group(function () {
+        // User management
+        Route::apiResource('users', UserController::class);
+        Route::post('/users/{user}/sync-roles', [UserController::class, 'syncRoles']);
+
+        // Role & Permission management
+        Route::apiResource('roles', RolePermissionController::class);
+        Route::get('/permissions', [RolePermissionController::class, 'permissions']);
+    });
+});

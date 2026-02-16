@@ -12,7 +12,7 @@ export const authApi = {
     apiClient.post('/auth/logout'),
 
   me: () =>
-    apiClient.get<{ data: User }>('/auth/me'),
+    apiClient.get<{ user: User }>('/auth/me'),
 
   forgotPassword: (email: string) =>
     apiClient.post('/auth/forgot-password', { email }),

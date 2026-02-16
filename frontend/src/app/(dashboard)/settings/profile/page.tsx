@@ -45,7 +45,7 @@ export default function ProfilePage() {
     setLoading(true);
     try {
       const response = await usersApi.updateProfile(profile);
-      setUser(response.data.data);
+      setUser(response.data.user);
       toast('Profile updated successfully', 'success');
     } catch (err) {
       const error = err as AxiosError<ApiError>;

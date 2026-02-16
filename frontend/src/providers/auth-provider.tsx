@@ -6,7 +6,7 @@ import { useAuthStore } from '@/lib/stores/auth-store';
 import { authApi } from '@/lib/api/auth';
 import { Spinner } from '@/components/ui/spinner';
 
-const publicPaths = ['/login', '/register', '/forgot-password'];
+const publicPaths = ['/login', '/register', '/forgot-password', '/reset-password'];
 
 function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
@@ -21,7 +21,7 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
       if (token) {
         try {
           const response = await authApi.me();
-          setUser(response.data.data);
+          setUser(response.data.user);
 
           if (isPublicPath) {
             router.replace('/dashboard');

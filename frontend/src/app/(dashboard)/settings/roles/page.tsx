@@ -123,11 +123,11 @@ export default function RolesPage() {
     );
   };
 
-  // Group permissions by resource
+  // Group permissions by resource (e.g., "view-contacts" → "contacts")
   const groupedPermissions = permissions.reduce<Record<string, Permission[]>>(
     (acc, perm) => {
-      const parts = perm.name.split('.');
-      const group = parts.length > 1 ? parts[0] : 'general';
+      const parts = perm.name.split('-');
+      const group = parts.length > 1 ? parts.slice(1).join('-') : 'general';
       if (!acc[group]) acc[group] = [];
       acc[group].push(perm);
       return acc;

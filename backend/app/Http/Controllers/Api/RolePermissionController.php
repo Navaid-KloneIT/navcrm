@@ -10,21 +10,27 @@ use Spatie\Permission\Models\Role;
 
 class RolePermissionController extends Controller
 {
+    private function formatRole(Role $role): array
+    {
+        return [
+            'id' => $role->id,
+            'name' => $role->name,
+            'guard_name' => $role->guard_name,
+            'permissions' => $role->permissions->map(fn ($p) => [
+                'id' => $p->id,
+                'name' => $p->name,
+            ])->values(),
+            'created_at' => $role->created_at?->toIso8601String(),
+            'updated_at' => $role->updated_at?->toIso8601String(),
+        ];
+    }
+
     public function index(Request $request): JsonResponse
     {
         $roles = Role::where('guard_name', 'web')->with('permissions')->get();
 
         return response()->json([
-            'roles' => $roles->map(function ($role) {
-                return [
-                    'id' => $role->id,
-                    'name' => $role->name,
-                    'guard_name' => $role->guard_name,
-                    'permissions' => $role->permissions->pluck('name'),
-                    'created_at' => $role->created_at?->toIso8601String(),
-                    'updated_at' => $role->updated_at?->toIso8601String(),
-                ];
-            }),
+            'data' => $roles->map(fn ($role) => $this->formatRole($role)),
         ]);
     }
 
@@ -32,8 +38,8 @@ class RolePermissionController extends Controller
     {
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255', 'unique:roles,name'],
-            'permissions' => ['nullable', 'array'],
-            'permissions.*' => ['exists:permissions,id'],
+            'permission_ids' => ['nullable', 'array'],
+            'permission_ids.*' => ['exists:permissions,id'],
         ]);
 
         $role = Role::create([
@@ -41,20 +47,15 @@ class RolePermissionController extends Controller
             'guard_name' => 'web',
         ]);
 
-        if (!empty($validated['permissions'])) {
-            $permissions = Permission::whereIn('id', $validated['permissions'])->where('guard_name', 'web')->get();
+        if (!empty($validated['permission_ids'])) {
+            $permissions = Permission::whereIn('id', $validated['permission_ids'])->where('guard_name', 'web')->get();
             $role->syncPermissions($permissions);
         }
 
+        $role->load('permissions');
+
         return response()->json([
-            'role' => [
-                'id' => $role->id,
-                'name' => $role->name,
-                'guard_name' => $role->guard_name,
-                'permissions' => $role->permissions->pluck('name'),
-                'created_at' => $role->created_at?->toIso8601String(),
-                'updated_at' => $role->updated_at?->toIso8601String(),
-            ],
+            'data' => $this->formatRole($role),
         ], 201);
     }
 
@@ -63,14 +64,7 @@ class RolePermissionController extends Controller
         $role->load('permissions');
 
         return response()->json([
-            'role' => [
-                'id' => $role->id,
-                'name' => $role->name,
-                'guard_name' => $role->guard_name,
-                'permissions' => $role->permissions->pluck('name'),
-                'created_at' => $role->created_at?->toIso8601String(),
-                'updated_at' => $role->updated_at?->toIso8601String(),
-            ],
+            'data' => $this->formatRole($role),
         ]);
     }
 
@@ -78,28 +72,23 @@ class RolePermissionController extends Controller
     {
         $validated = $request->validate([
             'name' => ['sometimes', 'string', 'max:255', 'unique:roles,name,' . $role->id],
-            'permissions' => ['nullable', 'array'],
-            'permissions.*' => ['exists:permissions,id'],
+            'permission_ids' => ['nullable', 'array'],
+            'permission_ids.*' => ['exists:permissions,id'],
         ]);
 
         if (isset($validated['name'])) {
             $role->update(['name' => $validated['name']]);
         }
 
-        if (isset($validated['permissions'])) {
-            $permissions = Permission::whereIn('id', $validated['permissions'])->where('guard_name', 'web')->get();
+        if (isset($validated['permission_ids'])) {
+            $permissions = Permission::whereIn('id', $validated['permission_ids'])->where('guard_name', 'web')->get();
             $role->syncPermissions($permissions);
         }
 
+        $role = $role->fresh()->load('permissions');
+
         return response()->json([
-            'role' => [
-                'id' => $role->id,
-                'name' => $role->fresh()->name,
-                'guard_name' => $role->guard_name,
-                'permissions' => $role->fresh()->permissions->pluck('name'),
-                'created_at' => $role->created_at?->toIso8601String(),
-                'updated_at' => $role->updated_at?->toIso8601String(),
-            ],
+            'data' => $this->formatRole($role),
         ]);
     }
 
@@ -123,7 +112,7 @@ class RolePermissionController extends Controller
         $permissions = Permission::where('guard_name', 'web')->get();
 
         return response()->json([
-            'permissions' => $permissions->map(function ($permission) {
+            'data' => $permissions->map(function ($permission) {
                 return [
                     'id' => $permission->id,
                     'name' => $permission->name,

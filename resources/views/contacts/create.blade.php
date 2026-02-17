@@ -85,9 +85,14 @@
                     <label class="ncv-label" for="account_id">Account (Company)</label>
                     <select class="ncv-select" id="account_id" name="account_id">
                       <option value="">— No Account —</option>
-                      <option value="1" {{ old('account_id', $contact->account_id ?? '') == 1 ? 'selected' : '' }}>Acme Corporation</option>
-                      <option value="2" {{ old('account_id', $contact->account_id ?? '') == 2 ? 'selected' : '' }}>TechStart Inc</option>
-                      <option value="3" {{ old('account_id', $contact->account_id ?? '') == 3 ? 'selected' : '' }}>Globex Inc</option>
+                      @foreach($accounts ?? [] as $account)
+                        @php
+                          $selectedAccountId = old('account_id', isset($contact) ? ($contact->accounts->first()?->id ?? '') : '');
+                        @endphp
+                        <option value="{{ $account->id }}" {{ $selectedAccountId == $account->id ? 'selected' : '' }}>
+                          {{ $account->name }}
+                        </option>
+                      @endforeach
                     </select>
                     <span class="ncv-form-hint">Or <a href="{{ route('accounts.create') }}" style="color:var(--ncv-blue-600);">create a new account</a></span>
                   </div>

@@ -6,6 +6,7 @@ type BadgeVariant = 'default' | 'primary' | 'success' | 'warning' | 'danger';
 interface BadgeProps {
   variant?: BadgeVariant;
   className?: string;
+  style?: React.CSSProperties;
   children: React.ReactNode;
 }
 
@@ -17,7 +18,7 @@ const variantClasses: Record<BadgeVariant, string> = {
   danger: 'bg-red-100 text-red-800',
 };
 
-function Badge({ variant = 'default', className, children }: BadgeProps) {
+function Badge({ variant = 'default', className, style, children }: BadgeProps) {
   return (
     <span
       className={cn(
@@ -25,6 +26,7 @@ function Badge({ variant = 'default', className, children }: BadgeProps) {
         variantClasses[variant],
         className
       )}
+      style={style}
     >
       {children}
     </span>

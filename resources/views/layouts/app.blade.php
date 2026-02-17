@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="csrf-token" content="{{ csrf_token() }}" />
+  <title>@yield('title', 'Dashboard') — NavCRM</title>
+
+  <!-- Bootstrap 5 -->
+  <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+        crossorigin="anonymous" />
+
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+
+  <!-- Google Fonts — Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet" />
+
+  <!-- NavCRM Theme -->
+  <link rel="stylesheet" href="{{ asset('css/navcrm-theme.css') }}" />
+
+  @stack('styles')
+</head>
+<body>
+
+{{-- Mobile sidebar overlay --}}
+<div class="ncv-sidebar-overlay" id="sidebarOverlay" onclick="closeMobileSidebar()"></div>
+
+<div class="ncv-wrapper" id="appWrapper">
+
+  {{-- ====================================================================
+       SIDEBAR
+  ===================================================================== --}}
+  <aside class="ncv-sidebar" id="sidebar">
+
+    {{-- Brand --}}
+    <a href="{{ route('dashboard') }}" class="ncv-brand">
+      <div class="ncv-brand-icon">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/>
+        </svg>
+      </div>
+      <span class="ncv-brand-text">Nav<span>CRM</span></span>
+    </a>
+
+    {{-- Navigation --}}
+    <nav class="ncv-nav" id="sidebarNav">
+
+      {{-- Main --}}
+      <div class="ncv-nav-section">
+        <div class="ncv-nav-label">Main</div>
+
+        <a href="{{ route('dashboard') }}"
+           class="ncv-nav-item {{ request()->routeIs('dashboard') ? 'active' : '' }}"
+           data-tooltip="Dashboard">
+          <svg class="ncv-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="7" height="7" rx="1"/>
+            <rect x="14" y="3" width="7" height="7" rx="1"/>
+            <rect x="3" y="14" width="7" height="7" rx="1"/>
+            <rect x="14" y="14" width="7" height="7" rx="1"/>
+          </svg>
+          Dashboard
+        </a>
+      </div>
+
+      {{-- CRM --}}
+      <div class="ncv-nav-section">
+        <div class="ncv-nav-label">CRM</div>
+
+        <a href="{{ route('contacts.index') }}"
+           class="ncv-nav-item {{ request()->routeIs('contacts.*') ? 'active' : '' }}"
+           data-tooltip="Contacts">
+          <svg class="ncv-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+          Contacts
+        </a>
+
+        <a href="{{ route('accounts.index') }}"
+           class="ncv-nav-item {{ request()->routeIs('accounts.*') ? 'active' : '' }}"
+           data-tooltip="Accounts">
+          <svg class="ncv-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+            <polyline points="9,22 9,12 15,12 15,22"/>
+          </svg>
+          Accounts
+        </a>
+
+        <a href="{{ route('leads.index') }}"
+           class="ncv-nav-item {{ request()->routeIs('leads.*') ? 'active' : '' }}"
+           data-tooltip="Leads">
+          <svg class="ncv-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="13,2 3,14 12,14 11,22 21,10 12,10"/>
+          </svg>
+          Leads
+          <span class="ncv-nav-badge">12</span>
+        </a>
+
+        <a href="{{ route('activities.index') }}"
+           class="ncv-nav-item {{ request()->routeIs('activities.*') ? 'active' : '' }}"
+           data-tooltip="Activities">
+          <svg class="ncv-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+          </svg>
+          Activities
+        </a>
+      </div>
+
+      {{-- Sales --}}
+      <div class="ncv-nav-section">
+        <div class="ncv-nav-label">Sales</div>
+
+        <a href="{{ route('opportunities.index') }}"
+           class="ncv-nav-item {{ request()->routeIs('opportunities.*') ? 'active' : '' }}"
+           data-tooltip="Opportunities">
+          <svg class="ncv-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="20" x2="18" y2="10"/>
+            <line x1="12" y1="20" x2="12" y2="4"/>
+            <line x1="6"  y1="20" x2="6"  y2="14"/>
+          </svg>
+          Opportunities
+        </a>
+
+        <a href="{{ route('quotes.index') }}"
+           class="ncv-nav-item {{ request()->routeIs('quotes.*') ? 'active' : '' }}"
+           data-tooltip="Quotes">
+          <svg class="ncv-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14,2 14,8 20,8"/>
+            <line x1="16" y1="13" x2="8" y2="13"/>
+            <line x1="16" y1="17" x2="8" y2="17"/>
+            <polyline points="10,9 9,9 8,9"/>
+          </svg>
+          Quotes
+        </a>
+
+        <a href="{{ route('products.index') }}"
+           class="ncv-nav-item {{ request()->routeIs('products.*') ? 'active' : '' }}"
+           data-tooltip="Products">
+          <svg class="ncv-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+          </svg>
+          Products
+        </a>
+
+        <a href="{{ route('forecasts.index') }}"
+           class="ncv-nav-item {{ request()->routeIs('forecasts.*') ? 'active' : '' }}"
+           data-tooltip="Forecasts">
+          <svg class="ncv-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="22,12 18,12 15,21 9,3 6,12 2,12"/>
+          </svg>
+          Forecasts
+        </a>
+      </div>
+
+      {{-- Admin (conditional) --}}
+      @if(auth()->user()?->hasRole('admin'))
+      <div class="ncv-nav-section">
+        <div class="ncv-nav-label">Admin</div>
+
+        <a href="{{ route('settings.users.index') }}"
+           class="ncv-nav-item {{ request()->routeIs('settings.users.*') ? 'active' : '' }}"
+           data-tooltip="Users">
+          <svg class="ncv-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+            <circle cx="12" cy="7" r="4"/>
+          </svg>
+          Users
+        </a>
+
+        <a href="{{ route('settings.roles.index') }}"
+           class="ncv-nav-item {{ request()->routeIs('settings.roles.*') ? 'active' : '' }}"
+           data-tooltip="Roles">
+          <svg class="ncv-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="11" width="18" height="11" rx="2"/>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+          </svg>
+          Roles & Permissions
+        </a>
+      </div>
+      @endif
+
+    </nav>
+
+    {{-- Footer / User --}}
+    <div class="ncv-sidebar-footer">
+      <div class="ncv-dropdown w-100" id="userDropdown">
+        <div class="ncv-user-card" onclick="toggleDropdown('userDropdownMenu')">
+          <div class="ncv-user-avatar">
+            {{ strtoupper(substr(auth()->user()?->name ?? 'U', 0, 2)) }}
+          </div>
+          <div style="overflow:hidden; flex:1;">
+            <div class="ncv-user-name">{{ auth()->user()?->name ?? 'User' }}</div>
+            <div class="ncv-user-role">{{ auth()->user()?->getRoleNames()->first() ?? 'Member' }}</div>
+          </div>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="color:#7a9bc4; flex-shrink:0;">
+            <polyline points="18,15 12,9 6,15"/>
+          </svg>
+        </div>
+
+        <div class="ncv-dropdown-menu" id="userDropdownMenu" style="bottom: calc(100% + 6px); top: auto;">
+          <a href="{{ route('settings.profile') }}" class="ncv-dropdown-item">
+            <i class="bi bi-person-circle" style="font-size: .9rem;"></i> My Profile
+          </a>
+          <a href="{{ route('settings.index') }}" class="ncv-dropdown-item">
+            <i class="bi bi-gear" style="font-size: .9rem;"></i> Settings
+          </a>
+          <div class="ncv-dropdown-divider"></div>
+          <form method="POST" action="{{ route('auth.logout') }}">
+            @csrf
+            <button type="submit" class="ncv-dropdown-item danger">
+              <i class="bi bi-box-arrow-right" style="font-size: .9rem;"></i> Sign Out
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+  </aside>
+
+  {{-- ====================================================================
+       MAIN
+  ===================================================================== --}}
+  <div class="ncv-main" id="mainContent">
+
+    {{-- Topbar --}}
+    <header class="ncv-topbar">
+      {{-- Sidebar toggle --}}
+      <button class="ncv-topbar-toggle" id="sidebarToggle" onclick="toggleSidebar()" title="Toggle Sidebar">
+        <i class="bi bi-layout-sidebar fs-5"></i>
+      </button>
+
+      {{-- Breadcrumb --}}
+      <nav class="ncv-breadcrumb">
+        <a href="{{ route('dashboard') }}" class="text-decoration-none" style="color: inherit;">
+          <i class="bi bi-house-door" style="font-size:.8rem;"></i>
+        </a>
+        <span class="ncv-breadcrumb-sep"><i class="bi bi-chevron-right" style="font-size:.65rem;"></i></span>
+        @yield('breadcrumb-items')
+        <span class="ncv-breadcrumb-current">@yield('page-title', 'Dashboard')</span>
+      </nav>
+
+      {{-- Global Search --}}
+      <div class="ncv-search d-none d-lg-block">
+        <svg class="ncv-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <input type="text" placeholder="Search contacts, leads, deals…" id="globalSearch" />
+      </div>
+
+      {{-- Actions --}}
+      <div class="ncv-topbar-actions ms-auto">
+
+        {{-- Search toggle (mobile) --}}
+        <button class="ncv-topbar-btn d-lg-none" title="Search">
+          <i class="bi bi-search fs-6"></i>
+        </button>
+
+        {{-- Notifications --}}
+        <button class="ncv-topbar-btn" title="Notifications">
+          <i class="bi bi-bell fs-6"></i>
+          <span class="ncv-topbar-btn-badge"></span>
+        </button>
+
+        {{-- Help --}}
+        <button class="ncv-topbar-btn" title="Help">
+          <i class="bi bi-question-circle fs-6"></i>
+        </button>
+
+        {{-- User (topbar) --}}
+        <div class="ncv-dropdown" id="topbarUserDropdown">
+          <button class="ncv-topbar-user" onclick="toggleDropdown('topbarUserMenu')">
+            <div class="ncv-topbar-avatar">
+              {{ strtoupper(substr(auth()->user()?->name ?? 'U', 0, 2)) }}
+            </div>
+            <span class="ncv-topbar-username d-none d-md-block">
+              {{ auth()->user()?->name ?? 'User' }}
+            </span>
+            <i class="bi bi-chevron-down" style="font-size:.7rem; color: var(--text-muted);"></i>
+          </button>
+
+          <div class="ncv-dropdown-menu" id="topbarUserMenu">
+            <a href="{{ route('settings.profile') }}" class="ncv-dropdown-item">
+              <i class="bi bi-person-circle"></i> Profile
+            </a>
+            <a href="{{ route('settings.index') }}" class="ncv-dropdown-item">
+              <i class="bi bi-gear"></i> Settings
+            </a>
+            <div class="ncv-dropdown-divider"></div>
+            <form method="POST" action="{{ route('auth.logout') }}">
+              @csrf
+              <button type="submit" class="ncv-dropdown-item danger">
+                <i class="bi bi-box-arrow-right"></i> Sign Out
+              </button>
+            </form>
+          </div>
+        </div>
+
+        {{-- Mobile sidebar open --}}
+        <button class="ncv-topbar-btn d-lg-none" onclick="openMobileSidebar()" title="Menu">
+          <i class="bi bi-list fs-5"></i>
+        </button>
+
+      </div>
+    </header>
+
+    {{-- Page Content --}}
+    <main class="ncv-content">
+      @if(session('success'))
+        <div class="alert alert-success alert-dismissible fade show mb-3 border-0"
+             style="background:#d1fae5; color:#065f46; border-radius:.75rem;"
+             role="alert">
+          <i class="bi bi-check-circle-fill me-2"></i>
+          {{ session('success') }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+      @endif
+
+      @if(session('error'))
+        <div class="alert alert-danger alert-dismissible fade show mb-3 border-0"
+             style="background:#fee2e2; color:#991b1b; border-radius:.75rem;"
+             role="alert">
+          <i class="bi bi-exclamation-circle-fill me-2"></i>
+          {{ session('error') }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+      @endif
+
+      @yield('content')
+    </main>
+
+  </div>{{-- end .ncv-main --}}
+
+</div>{{-- end .ncv-wrapper --}}
+
+{{-- Toast container --}}
+<div class="ncv-toast-container" id="toastContainer"></div>
+
+{{-- Bootstrap 5 JS --}}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc4s9bIOgUxi8T/jzmJ3H/jviwjBVfJSYBDiGhCDHMer"
+        crossorigin="anonymous"></script>
+
+{{-- NavCRM Theme JS --}}
+<script src="{{ asset('js/navcrm-theme.js') }}"></script>
+
+@stack('scripts')
+</body>
+</html>

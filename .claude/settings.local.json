@@ -15,7 +15,8 @@
       "Bash(/c/xampp/php/php artisan test:*)",
       "Bash(/c/xampp/php/php artisan vendor:publish --tag=sanctum-migrations)",
       "Bash(git add:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(cd:*)"
     ]
   }
 }

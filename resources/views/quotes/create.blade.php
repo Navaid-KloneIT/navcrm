@@ -83,25 +83,33 @@
               <label class="ncv-label" for="account_id">Account <span class="required">*</span></label>
               <select class="ncv-select" id="account_id" name="account_id" required>
                 <option value="">— Select Account —</option>
-                <option value="1" {{ old('account_id') == 1 ? 'selected' : '' }}>Acme Corporation</option>
-                <option value="2" {{ old('account_id') == 2 ? 'selected' : '' }}>TechStart Inc</option>
-                <option value="3" {{ old('account_id') == 3 ? 'selected' : '' }}>Globex Inc</option>
+                @foreach($accounts ?? [] as $account)
+                  <option value="{{ $account->id }}" {{ old('account_id', $quote->account_id ?? '') == $account->id ? 'selected' : '' }}>
+                    {{ $account->name }}
+                  </option>
+                @endforeach
               </select>
             </div>
             <div class="col-12 col-md-6">
               <label class="ncv-label" for="contact_id">Primary Contact</label>
               <select class="ncv-select" id="contact_id" name="contact_id">
                 <option value="">— Select Contact —</option>
-                <option value="1">Sarah Johnson</option>
-                <option value="2">Michael Chen</option>
+                @foreach($contacts ?? [] as $c)
+                  <option value="{{ $c->id }}" {{ old('contact_id', $quote->contact_id ?? '') == $c->id ? 'selected' : '' }}>
+                    {{ $c->first_name }} {{ $c->last_name }}
+                  </option>
+                @endforeach
               </select>
             </div>
             <div class="col-12 col-md-4">
               <label class="ncv-label" for="opportunity_id">Linked Opportunity</label>
               <select class="ncv-select" id="opportunity_id" name="opportunity_id">
                 <option value="">— None —</option>
-                <option value="1">Acme Enterprise Renewal</option>
-                <option value="2">TechStart Expansion</option>
+                @foreach($opportunities ?? [] as $opp)
+                  <option value="{{ $opp->id }}" {{ old('opportunity_id', $quote->opportunity_id ?? '') == $opp->id ? 'selected' : '' }}>
+                    {{ $opp->name }}
+                  </option>
+                @endforeach
               </select>
             </div>
             <div class="col-12 col-md-4">
@@ -112,9 +120,12 @@
             <div class="col-12 col-md-4">
               <label class="ncv-label" for="price_book_id">Price Book</label>
               <select class="ncv-select" id="price_book_id" name="price_book_id">
-                <option value="1" selected>Standard</option>
-                <option value="2">Enterprise</option>
-                <option value="3">Partner</option>
+                <option value="">— Select Price Book —</option>
+                @foreach($priceBooks ?? [] as $pb)
+                  <option value="{{ $pb->id }}" {{ old('price_book_id', $quote->price_book_id ?? '') == $pb->id || $pb->is_default ? 'selected' : '' }}>
+                    {{ $pb->name }}{{ $pb->is_default ? ' (Default)' : '' }}
+                  </option>
+                @endforeach
               </select>
             </div>
             <div class="col-12">

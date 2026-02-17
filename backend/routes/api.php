@@ -5,9 +5,16 @@ use App\Http\Controllers\Api\ActivityController;
 use App\Http\Controllers\Api\AddressController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ContactController;
+use App\Http\Controllers\Api\ForecastController;
 use App\Http\Controllers\Api\LeadController;
 use App\Http\Controllers\Api\NoteController;
+use App\Http\Controllers\Api\OpportunityController;
+use App\Http\Controllers\Api\PipelineStageController;
+use App\Http\Controllers\Api\PriceBookController;
+use App\Http\Controllers\Api\ProductController;
+use App\Http\Controllers\Api\QuoteController;
 use App\Http\Controllers\Api\RolePermissionController;
+use App\Http\Controllers\Api\SalesTargetController;
 use App\Http\Controllers\Api\TagController;
 use App\Http\Controllers\Api\UserController;
 use Illuminate\Support\Facades\Route;
@@ -79,6 +86,43 @@ Route::middleware(['auth:sanctum', App\Http\Middleware\TenantScope::class])->gro
     Route::post('/notes', [NoteController::class, 'store']);
     Route::put('/notes/{note}', [NoteController::class, 'update']);
     Route::delete('/notes/{note}', [NoteController::class, 'destroy']);
+
+    // =====================================================
+    // Sales Force Automation (SFA)
+    // =====================================================
+
+    // Pipeline Stages
+    Route::apiResource('pipeline-stages', PipelineStageController::class);
+    Route::post('/pipeline-stages/reorder', [PipelineStageController::class, 'reorder']);
+
+    // Opportunities (Deals)
+    Route::apiResource('opportunities', OpportunityController::class);
+    Route::put('/opportunities/{opportunity}/stage', [OpportunityController::class, 'updateStage']);
+    Route::get('/opportunities/{opportunity}/team', [OpportunityController::class, 'team']);
+    Route::post('/opportunities/{opportunity}/team', [OpportunityController::class, 'addTeamMember']);
+    Route::put('/opportunities/{opportunity}/team/{user}', [OpportunityController::class, 'updateTeamMember']);
+    Route::delete('/opportunities/{opportunity}/team/{user}', [OpportunityController::class, 'removeTeamMember']);
+
+    // Products
+    Route::apiResource('products', ProductController::class);
+
+    // Price Books
+    Route::apiResource('price-books', PriceBookController::class);
+    Route::post('/price-books/{priceBook}/entries', [PriceBookController::class, 'addEntry']);
+    Route::put('/price-book-entries/{entry}', [PriceBookController::class, 'updateEntry']);
+    Route::delete('/price-book-entries/{entry}', [PriceBookController::class, 'removeEntry']);
+
+    // Quotes
+    Route::apiResource('quotes', QuoteController::class);
+    Route::put('/quotes/{quote}/status', [QuoteController::class, 'updateStatus']);
+    Route::get('/quotes/{quote}/pdf', [QuoteController::class, 'generatePdf']);
+
+    // Sales Targets
+    Route::apiResource('sales-targets', SalesTargetController::class);
+
+    // Forecasting
+    Route::get('/forecasts', [ForecastController::class, 'index']);
+    Route::get('/forecasts/summary', [ForecastController::class, 'summary']);
 
     // Admin routes
     Route::middleware(['role:admin'])->group(function () {

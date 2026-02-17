@@ -8,6 +8,10 @@ import {
   Users,
   Building2,
   Target,
+  Handshake,
+  Package,
+  FileText,
+  TrendingUp,
   UserCircle,
   UserCog,
   Shield,
@@ -32,6 +36,13 @@ const mainNavItems: NavItem[] = [
   { label: 'Contacts', href: '/contacts', icon: <Users className="h-5 w-5" /> },
   { label: 'Accounts', href: '/accounts', icon: <Building2 className="h-5 w-5" /> },
   { label: 'Leads', href: '/leads', icon: <Target className="h-5 w-5" /> },
+];
+
+const salesNavItems: NavItem[] = [
+  { label: 'Opportunities', href: '/opportunities', icon: <Handshake className="h-5 w-5" /> },
+  { label: 'Products', href: '/products', icon: <Package className="h-5 w-5" /> },
+  { label: 'Quotes', href: '/quotes', icon: <FileText className="h-5 w-5" /> },
+  { label: 'Forecasts', href: '/forecasts', icon: <TrendingUp className="h-5 w-5" /> },
 ];
 
 const settingsNavItems: NavItem[] = [
@@ -105,6 +116,16 @@ function Sidebar() {
 
       <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
         {mainNavItems.map(renderNavItem)}
+
+        <div className="my-4 border-t border-gray-200" />
+
+        {!sidebarCollapsed && (
+          <p className="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-gray-400">
+            Sales
+          </p>
+        )}
+
+        {salesNavItems.map(renderNavItem)}
 
         <div className="my-4 border-t border-gray-200" />
 

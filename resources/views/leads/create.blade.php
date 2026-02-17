@@ -149,11 +149,13 @@
                 </div>
                 <div class="col-12">
                   <label class="ncv-label" for="assigned_to">Assign To</label>
-                  <select class="ncv-select" id="assigned_to" name="assigned_to">
+                  <select class="ncv-select" id="assigned_to" name="owner_id">
                     <option value="">— Unassigned —</option>
-                    <option value="1" selected>{{ auth()->user()?->name ?? 'You' }}</option>
-                    <option value="2">John Smith</option>
-                    <option value="3">Emma Williams</option>
+                    @foreach($owners ?? [] as $owner)
+                      <option value="{{ $owner->id }}" {{ old('owner_id', $lead->owner_id ?? auth()->id()) == $owner->id ? 'selected' : '' }}>
+                        {{ $owner->name }}
+                      </option>
+                    @endforeach
                   </select>
                 </div>
               </div>

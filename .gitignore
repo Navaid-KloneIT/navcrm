@@ -24,3 +24,7 @@ Homestead.json
 Homestead.yaml
 Thumbs.db
 composer.phar
+
+# Claude Code
+/.claude/settings.local.json
+/memory/

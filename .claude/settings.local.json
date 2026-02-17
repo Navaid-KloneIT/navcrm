@@ -16,7 +16,16 @@
       "Bash(/c/xampp/php/php artisan vendor:publish --tag=sanctum-migrations)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
-      "Bash(cd:*)"
+      "Bash(cd:*)",
+      "Bash(for f in app/Http/Controllers/DashboardController.php app/Http/Controllers/ContactWebController.php app/Http/Controllers/AccountWebController.php app/Http/Controllers/LeadWebController.php app/Http/Controllers/OpportunityWebController.php app/Http/Controllers/ProductWebController.php app/Http/Controllers/PriceBookWebController.php app/Http/Controllers/QuoteWebController.php app/Http/Controllers/ForecastWebController.php app/Http/Controllers/ActivityWebController.php app/Http/Controllers/SettingsController.php)",
+      "Bash(do php -l:*)",
+      "Bash(done)",
+      "Bash(composer install:*)",
+      "Bash(php.exe:*)",
+      "Bash(\"/c/Program Files/Ampps/php82/php.exe\" --version)",
+      "Bash(\"/c/xampp8/php/php.exe\" --version)",
+      "Bash(test:*)",
+      "Bash(\"e:/Web Projects/navcrm/README.md\":*)"
     ]
   }
 }

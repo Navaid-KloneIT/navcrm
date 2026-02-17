@@ -118,14 +118,14 @@ function AccountForm({ defaultValues, onSubmit, onCancel, loading = false, exclu
             type="number"
             placeholder="1000000"
             error={errors.annual_revenue?.message}
-            {...register('annual_revenue')}
+            {...register('annual_revenue', { valueAsNumber: true })}
           />
           <Input
             label="Employee Count"
             type="number"
             placeholder="50"
             error={errors.employee_count?.message}
-            {...register('employee_count')}
+            {...register('employee_count', { valueAsNumber: true })}
           />
           <Input
             label="Tax ID"

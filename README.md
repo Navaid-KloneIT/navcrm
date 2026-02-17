@@ -1,23 +1,16 @@
 # NavCRM
 
-A multi-tenant CRM (Customer Relationship Management) application built with Laravel 12 and Next.js 15.
+A multi-tenant CRM (Customer Relationship Management) application built with Laravel and Blade templates.
 
 ## Tech Stack
 
-### Backend
 - **Laravel 12** (PHP 8.2+)
+- **Blade** (server-side templating)
+- **Vite** (asset bundler)
 - **MySQL** (single database, `tenant_id` column multi-tenancy)
 - **Laravel Sanctum** (token-based API authentication)
 - **Spatie Laravel Permission** (roles & permissions)
 - **barryvdh/laravel-dompdf** (PDF generation)
-
-### Frontend
-- **Next.js 15** (App Router, TypeScript)
-- **Tailwind CSS v4**
-- **Zustand** (state management with persist)
-- **React Hook Form + Zod** (form validation)
-- **Axios** (HTTP client)
-- **Lucide React** (icons)
 
 ## Features
 
@@ -110,51 +103,202 @@ A multi-tenant CRM (Customer Relationship Management) application built with Lar
 
 ```
 navcrm/
-├── backend/                    # Laravel 12 API
-│   ├── app/
-│   │   ├── Enums/              # LeadStatus, LeadScore, ActivityType, AddressType,
-│   │   │                       # OpportunitySource, QuoteStatus, ForecastCategory
-│   │   ├── Http/
-│   │   │   ├── Controllers/Api/ # 17 API controllers
-│   │   │   ├── Middleware/      # TenantScope
-│   │   │   ├── Requests/       # Form request validation
-│   │   │   └── Resources/      # API resource transformers
-│   │   ├── Models/             # Eloquent models with BelongsToTenant trait
-│   │   └── Services/          # LeadConversion, QuoteCalculation, Forecast, QuotePdf
-│   ├── database/
-│   │   ├── factories/          # Model factories for testing
-│   │   ├── migrations/         # 27 migration files
-│   │   └── seeders/           # RolePermission + DemoData seeders
-│   ├── resources/views/quotes/ # Quote PDF Blade template
-│   ├── routes/api.php          # All API routes
-│   └── tests/                  # PHPUnit feature & unit tests
+├── app/
+│   ├── Enums/                          # PHP 8.2 enums for status/score values
+│   │   ├── ActivityType.php
+│   │   ├── AddressType.php
+│   │   ├── ForecastCategory.php
+│   │   ├── LeadScore.php
+│   │   ├── LeadStatus.php
+│   │   ├── OpportunitySource.php
+│   │   └── QuoteStatus.php
+│   │
+│   ├── Http/
+│   │   ├── Controllers/Api/            # 17 RESTful API controllers
+│   │   │   ├── AccountController.php
+│   │   │   ├── ActivityController.php
+│   │   │   ├── AddressController.php
+│   │   │   ├── AuthController.php
+│   │   │   ├── ContactController.php
+│   │   │   ├── ForecastController.php
+│   │   │   ├── LeadController.php
+│   │   │   ├── NoteController.php
+│   │   │   ├── OpportunityController.php
+│   │   │   ├── PipelineStageController.php
+│   │   │   ├── PriceBookController.php
+│   │   │   ├── ProductController.php
+│   │   │   ├── QuoteController.php
+│   │   │   ├── RolePermissionController.php
+│   │   │   ├── SalesTargetController.php
+│   │   │   ├── TagController.php
+│   │   │   └── UserController.php
+│   │   ├── Middleware/
+│   │   │   └── TenantScope.php         # Enforces tenant isolation per request
+│   │   ├── Requests/                   # Form request validation classes
+│   │   │   ├── Account/
+│   │   │   ├── Auth/
+│   │   │   ├── Contact/
+│   │   │   ├── ForecastEntry/
+│   │   │   ├── Lead/
+│   │   │   ├── Opportunity/
+│   │   │   ├── PriceBook/
+│   │   │   ├── Product/
+│   │   │   ├── Quote/
+│   │   │   └── SalesTarget/
+│   │   └── Resources/                  # API resource transformers (16 resources)
+│   │       ├── AccountResource.php
+│   │       ├── ActivityResource.php
+│   │       ├── AddressResource.php
+│   │       ├── ContactResource.php
+│   │       ├── LeadResource.php
+│   │       ├── NoteResource.php
+│   │       ├── OpportunityResource.php
+│   │       ├── PipelineStageResource.php
+│   │       ├── PriceBookEntryResource.php
+│   │       ├── PriceBookResource.php
+│   │       ├── ProductResource.php
+│   │       ├── QuoteLineItemResource.php
+│   │       ├── QuoteResource.php
+│   │       ├── SalesTargetResource.php
+│   │       ├── TagResource.php
+│   │       └── UserResource.php
+│   │
+│   ├── Models/                         # Eloquent models with BelongsToTenant trait
+│   │   ├── Concerns/
+│   │   │   └── BelongsToTenant.php     # Global scope trait for tenant isolation
+│   │   ├── Account.php
+│   │   ├── Activity.php
+│   │   ├── Address.php
+│   │   ├── Contact.php
+│   │   ├── ForecastEntry.php
+│   │   ├── Lead.php
+│   │   ├── Note.php
+│   │   ├── Opportunity.php
+│   │   ├── PipelineStage.php
+│   │   ├── PriceBook.php
+│   │   ├── PriceBookEntry.php
+│   │   ├── Product.php
+│   │   ├── Quote.php
+│   │   ├── QuoteLineItem.php
+│   │   ├── SalesTarget.php
+│   │   ├── Tag.php
+│   │   ├── Tenant.php
+│   │   └── User.php
+│   │
+│   ├── Providers/
+│   │   └── AppServiceProvider.php
+│   │
+│   └── Services/                       # Business logic services
+│       ├── ForecastService.php
+│       ├── LeadConversionService.php
+│       ├── QuoteCalculationService.php
+│       └── QuotePdfService.php
 │
-├── frontend/                   # Next.js 15 App
-│   └── src/
-│       ├── app/
-│       │   ├── (auth)/         # Login, Register, Forgot Password
-│       │   └── (dashboard)/    # Dashboard, Contacts, Accounts, Leads,
-│       │                       # Opportunities, Products, Quotes, Forecasts, Settings
-│       ├── components/
-│       │   ├── ui/             # Button, Input, Card, Dialog, Table, Toast, etc.
-│       │   ├── layout/         # Sidebar, Header, Breadcrumbs, Mobile Nav
-│       │   ├── shared/         # DataTable, SearchInput, ConfirmDialog, StatsCard
-│       │   ├── contacts/       # Contact form, table, filters, timeline
-│       │   ├── accounts/       # Account form, table, hierarchy, stakeholders
-│       │   ├── leads/          # Lead form, table, kanban, conversion dialog
-│       │   ├── opportunities/  # Opportunity form, table, kanban, team dialog
-│       │   ├── products/       # Product form, table
-│       │   ├── quotes/         # Quote form, table, line items, summary, status badge
-│       │   ├── forecasts/      # Summary cards, pipeline chart, targets table, form
-│       │   ├── activities/     # Activity timeline, activity form
-│       │   └── tags/           # Tag input, tag badge
-│       ├── lib/
-│       │   ├── api/            # Axios client + API modules
-│       │   ├── stores/         # Zustand auth + UI stores
-│       │   ├── utils/          # cn(), formatDate(), constants
-│       │   └── validations/    # Zod schemas
-│       ├── providers/          # AuthProvider, ToastProvider
-│       └── types/              # TypeScript interfaces
+├── bootstrap/
+│   ├── app.php
+│   └── providers.php
+│
+├── config/                             # Laravel configuration files
+│   ├── app.php
+│   ├── auth.php
+│   ├── cors.php
+│   ├── database.php
+│   ├── mail.php
+│   ├── permission.php
+│   └── ...
+│
+├── database/
+│   ├── factories/                      # Model factories for testing
+│   │   ├── AccountFactory.php
+│   │   ├── ContactFactory.php
+│   │   ├── LeadFactory.php
+│   │   ├── TenantFactory.php
+│   │   └── UserFactory.php
+│   ├── migrations/                     # 27 migration files
+│   └── seeders/
+│       ├── DatabaseSeeder.php
+│       ├── DemoDataSeeder.php
+│       └── RolePermissionSeeder.php
+│
+├── public/
+│   ├── index.php                       # Application entry point
+│   ├── css/
+│   │   └── navcrm-theme.css
+│   └── js/
+│       └── navcrm-theme.js
+│
+├── resources/
+│   ├── css/
+│   │   └── app.css
+│   ├── js/
+│   │   ├── app.js
+│   │   └── bootstrap.js
+│   └── views/                          # Blade templates
+│       ├── welcome.blade.php
+│       ├── layouts/
+│       │   ├── app.blade.php           # Main authenticated layout
+│       │   └── auth.blade.php          # Auth layout
+│       ├── auth/
+│       │   ├── login.blade.php
+│       │   └── register.blade.php
+│       ├── dashboard/
+│       │   └── index.blade.php
+│       ├── accounts/
+│       │   ├── index.blade.php
+│       │   ├── create.blade.php
+│       │   └── show.blade.php
+│       ├── contacts/
+│       │   ├── index.blade.php
+│       │   ├── create.blade.php
+│       │   └── show.blade.php
+│       ├── leads/
+│       │   ├── index.blade.php
+│       │   ├── create.blade.php
+│       │   └── show.blade.php
+│       ├── opportunities/
+│       │   ├── index.blade.php
+│       │   ├── create.blade.php
+│       │   └── show.blade.php
+│       ├── quotes/
+│       │   ├── index.blade.php
+│       │   ├── create.blade.php
+│       │   ├── show.blade.php
+│       │   └── pdf.blade.php           # Quote PDF template (DomPDF)
+│       ├── price-books/
+│       │   └── index.blade.php
+│       ├── products/
+│       │   ├── index.blade.php
+│       │   └── create.blade.php
+│       └── forecasts/
+│           └── index.blade.php
+│
+├── routes/
+│   ├── api.php                         # All API routes
+│   ├── web.php                         # Web routes
+│   └── console.php
+│
+├── tests/
+│   ├── Feature/
+│   │   ├── Account/
+│   │   │   └── AccountCrudTest.php
+│   │   ├── Auth/
+│   │   │   ├── LoginTest.php
+│   │   │   └── RegisterTest.php
+│   │   ├── Contact/
+│   │   │   └── ContactCrudTest.php
+│   │   ├── Lead/
+│   │   │   └── LeadCrudTest.php
+│   │   └── TenantIsolationTest.php
+│   ├── Unit/
+│   │   └── Services/
+│   │       └── LeadConversionServiceTest.php
+│   └── TestCase.php
+│
+├── composer.json
+├── package.json
+├── vite.config.js
+├── phpunit.xml
+└── README.md
 ```
 
 ## Prerequisites
@@ -174,21 +318,25 @@ git clone <repository-url>
 cd navcrm
 ```
 
-### 2. Backend setup
+### 2. Install dependencies
 
 ```bash
-cd backend
-
-# Install dependencies
 composer install
+npm install
+```
 
-# Copy environment file and configure
+### 3. Configure environment
+
+```bash
 cp .env.example .env
+
 # Edit .env: set DB_DATABASE=navcrm, DB_USERNAME, DB_PASSWORD
-
-# Generate app key
 php artisan key:generate
+```
 
+### 4. Set up the database
+
+```bash
 # Create database
 mysql -u root -e "CREATE DATABASE navcrm"
 
@@ -197,29 +345,23 @@ php artisan migrate
 
 # Seed roles, permissions, and demo data
 php artisan db:seed
-
-# Start the server
-php artisan serve
 ```
 
-The API will be available at `http://localhost:8000/api`.
-
-### 3. Frontend setup
+### 5. Build assets
 
 ```bash
-cd frontend
-
-# Install dependencies
-npm install
-
-# Create environment file
-echo "NEXT_PUBLIC_API_URL=http://localhost:8000/api" > .env.local
-
-# Start development server
+npm run build
+# or for development with hot reload:
 npm run dev
 ```
 
-The app will be available at `http://localhost:3000`.
+### 6. Start the server
+
+```bash
+php artisan serve
+```
+
+The app will be available at `http://localhost:8000`.
 
 ## Demo Accounts
 
@@ -281,8 +423,6 @@ After running `php artisan db:seed`, you can log in with these demo accounts:
 ## Testing
 
 ```bash
-cd backend
-
 # Run all tests
 php artisan test
 
@@ -329,10 +469,10 @@ Current test suite: **33 tests, 146 assertions** covering auth, CRUD operations,
 ## Architecture Decisions
 
 1. **Single DB multi-tenancy** - `tenant_id` column with global scopes for simplicity
-2. **Token-based auth** - Sanctum tokens (not SPA cookies) since frontend/backend run on different ports
+2. **Token-based auth** - Sanctum tokens for API authentication
 3. **Polymorphic tables** - Activities, notes, addresses, tags shared across modules
 4. **PHP 8.2 enums** - Type-safe status and score values
-5. **Client-side rendering** - Dashboard pages use `'use client'` since auth tokens are in localStorage
+5. **Blade templates** - Server-side rendering with Vite-bundled assets
 6. **Quote PDF generation** - Server-side PDF rendering with barryvdh/laravel-dompdf
 7. **Configurable pipelines** - Tenant-specific pipeline stages with position ordering and color coding
 8. **Forecast calculations** - Service-based weighted pipeline and target vs actual computations

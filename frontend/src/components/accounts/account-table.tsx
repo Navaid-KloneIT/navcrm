@@ -86,12 +86,12 @@ function AccountTable({ accounts, loading, sortBy, sortDir, onSort }: AccountTab
   return (
     <DataTable
       columns={columns}
-      data={accounts as unknown as Record<string, unknown>[]}
+      data={accounts}
       loading={loading}
       sortBy={sortBy}
       sortDir={sortDir}
       onSort={onSort}
-      onRowClick={(item) => router.push(`/accounts/${(item as unknown as Account).id}`)}
+      onRowClick={(item) => router.push(`/accounts/${item.id}`)}
       emptyTitle="No accounts found"
       emptyDescription="Get started by adding your first account."
     />

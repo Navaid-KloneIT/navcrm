@@ -1,110 +1,159 @@
 # NavCRM
 
-A multi-tenant CRM (Customer Relationship Management) application built with Laravel and Blade templates.
+A **multi-tenant CRM** (Customer Relationship Management) application built with **Laravel 12** and **Blade** templates, featuring a RESTful JSON API and a traditional server-rendered web interface.
+
+---
 
 ## Tech Stack
 
-- **Laravel 12** (PHP 8.2+)
-- **Blade** (server-side templating)
-- **Vite** (asset bundler)
-- **MySQL** (single database, `tenant_id` column multi-tenancy)
-- **Laravel Sanctum** (token-based API authentication)
-- **Spatie Laravel Permission** (roles & permissions)
-- **barryvdh/laravel-dompdf** (PDF generation)
+| Layer | Technology |
+|-------|-----------|
+| Backend | Laravel 12 (PHP 8.2+) |
+| Frontend | Blade templates + Bootstrap 5 |
+| Styling | Bootstrap 5 + Bootstrap Icons + custom NavCRM theme |
+| Database | MySQL (single-database multi-tenancy) |
+| Web Auth | Laravel session-based authentication |
+| API Auth | Laravel Sanctum (token-based) |
+| Roles | Spatie Laravel Permission |
+| PDF | barryvdh/laravel-dompdf |
+
+---
+
+## Quick Start
+
+```bash
+# 1. Install PHP dependencies
+composer install
+
+# 2. Install Node dependencies and build assets
+npm install && npm run build
+
+# 3. Configure environment
+cp .env.example .env
+php artisan key:generate
+
+# 4. Run migrations and seed
+php artisan migrate
+php artisan db:seed
+
+# 5. Start development server
+php artisan serve
+```
+
+---
+
+## Architecture
+
+### Two Auth Layers
+
+| Layer | Guard | Routes | Use Case |
+|-------|-------|--------|----------|
+| **Web** | `web` (session) | `routes/web.php` | Browser users, Blade pages |
+| **API** | `sanctum` (token) | `routes/api.php` | Mobile/SPA/API clients |
+
+### Multi-Tenancy
+
+- Single database with `tenant_id` column on all tenant-scoped tables
+- `BelongsToTenant` trait adds global query scopes automatically
+- `TenantScope` middleware validates active tenant on every API request
+- Web routes automatically scope via `auth()->user()->tenant_id`
+
+---
 
 ## Features
 
-### Authentication
-- User registration with company/tenant creation
-- Login / Logout with Sanctum tokens
-- Forgot password / Reset password
-- Route guards and 401 redirect
+### Authentication (Web + API)
 
-### Multi-Tenancy
-- Single database with `tenant_id` scoping via `BelongsToTenant` trait
-- Global query scopes automatically filter all data by tenant
-- `TenantScope` middleware validates active tenant on every request
+| Feature | Web Route | API Route |
+|---------|-----------|-----------|
+| Register | `POST /auth/register` | `POST /api/auth/register` |
+| Login | `POST /auth/login` | `POST /api/auth/login` |
+| Logout | `POST /auth/logout` | `POST /api/auth/logout` |
+| Forgot password | `POST /auth/forgot-password` | `POST /api/auth/forgot-password` |
 
-### Roles & Permissions
-- 4 default roles: **Admin**, **Manager**, **Sales**, **Viewer**
-- 51 granular permissions (12 modules x 4 actions + 3 special)
-- Admin-only user and role management
-
-### CRM Modules
+### CRM Modules (All with full CRUD)
 
 #### Contacts
-- Full CRUD with search, filtering, sorting, pagination
-- Tag management (polymorphic many-to-many)
-- Contact relationships (self-referencing)
-- Activity timeline and notes
-- Account associations
+- Profile: name, email, phone, mobile, job title, department
+- Social media links: LinkedIn, Twitter, Facebook
+- Address fields (street, city, state, postal code, country)
+- Relationship mapping (self-referencing many-to-many with relationship type)
+- Activity timeline (polymorphic) and notes
+- Tags & segmentation (polymorphic many-to-many)
+- Account associations (many-to-many with role and is_primary pivot)
+- Table + Grid view toggle
 
 #### Accounts (Companies)
-- Full CRUD with search and filtering
+- Company details: industry, website, phone, email, annual revenue, employee count, tax ID
 - Parent/child hierarchy (self-referencing)
-- Stakeholder management (contact pivot with role)
-- Address management (polymorphic: billing/shipping/other)
+- Billing and shipping address management (polymorphic)
+- Stakeholder contacts with role pivot
+- Activity timeline and notes
 
 #### Leads
-- Full CRUD with search and filtering
-- Lead scoring (Hot / Warm / Cold)
-- Qualification status (New / Contacted / Qualified / Converted / Recycled)
+- Lead capture via manual entry form
+- Lead scoring: Hot / Warm / Cold
+- Qualification status: New / Contacted / Qualified / Converted / Recycled
 - Table and Kanban board views
-- Lead conversion to Contact + Account (transactional)
+- One-click conversion to Contact + Account (DB transaction)
 - Tag management
-
-### Sales Force Automation (SFA)
+- Source tracking
 
 #### Opportunities (Deals)
-- Full CRUD with search, filtering, sorting, pagination
-- Configurable pipeline stages with drag-and-drop Kanban board
-- Table and Kanban board views (toggle)
-- Deal amount, probability, weighted amount calculation
+- Configurable pipeline stages (drag-and-drop Kanban board)
+- Deal details: amount, probability, close date, competitor, next steps
+- Weighted amount calculation (amount × probability)
 - Sales team management with role and commission split percentages
-- Linked quotes, activities, and notes
 - Won/Lost tracking with timestamps and lost reason
-- Source tracking (web, referral, partner, outbound, inbound)
+- Linked quotes, activities, notes, tags
 
-#### Products
-- Full CRUD product/service catalog
-- SKU, unit price, cost price, margin calculation
-- Category and unit type management
-- Active/inactive status
+#### Products & Price Books
+- Full product/service catalog: SKU, unit price, cost price, category, unit
 - Price books with per-product pricing and minimum quantities
+- Default and active price book flags
+- Active/inactive product status
 
 #### Quotes
-- Full CRUD with auto-generated quote numbers (Q-XXXXX)
-- Line item builder with product selection, quantity, discounts
+- Auto-generated quote numbers (QT-XXXXX format)
+- Dynamic line item builder with product selection and inline discounts
 - Automatic subtotal, discount, tax, and total calculations
-- Quote status workflow (Draft → Sent → Accepted/Rejected/Expired)
-- PDF generation and download
-- Linked to opportunities, accounts, and contacts
-- Terms and conditions, notes
+- Quote status workflow: Draft → Sent → Accepted / Rejected / Expired
+- PDF generation and download (via dompdf)
+- Linked to opportunities, accounts, contacts
+- Terms and conditions, notes fields
 
 #### Forecasting
-- Pipeline value and weighted forecast summary
-- Pipeline breakdown by stage (visual bar chart)
+- Revenue predictions with weighted pipeline
+- Pipeline breakdown by stage (visual chart)
 - Sales targets (monthly/quarterly/yearly quotas)
-- Target vs actual attainment tracking with progress indicators
-- Per-rep and team-level targets
-- Period-based filtering (quarterly navigation)
+- Target vs actual attainment tracking
+- Per-rep and team-level performance data
 
 ### Dashboard
-- KPI stats cards (Total Contacts, Accounts, Leads, Converted Leads)
-- Recent activity feed
+- KPI cards: Contacts, Accounts, Leads, Open Opportunities, Closed Revenue
+- Recent activities feed
+- Recent opportunities
+- Recent contacts
+
+### Activities
+- Polymorphic activity log across all CRM objects
+- Filter by activity type (email, call, meeting, task, note)
+- Chronological timeline view with pagination
 
 ### Settings
-- User profile management
+- User profile (name, email, phone)
 - Password change
-- Admin: User management with role assignment
-- Admin: Role and permission management
+- Admin: User management with invite flow and role assignment
+- Admin: Roles and permissions matrix view
+
+---
 
 ## Project Structure
 
 ```
 navcrm/
 ├── app/
-│   ├── Enums/                          # PHP 8.2 enums for status/score values
+│   ├── Enums/
 │   │   ├── ActivityType.php
 │   │   ├── AddressType.php
 │   │   ├── ForecastCategory.php
@@ -114,27 +163,43 @@ navcrm/
 │   │   └── QuoteStatus.php
 │   │
 │   ├── Http/
-│   │   ├── Controllers/Api/            # 17 RESTful API controllers
-│   │   │   ├── AccountController.php
-│   │   │   ├── ActivityController.php
-│   │   │   ├── AddressController.php
-│   │   │   ├── AuthController.php
-│   │   │   ├── ContactController.php
-│   │   │   ├── ForecastController.php
-│   │   │   ├── LeadController.php
-│   │   │   ├── NoteController.php
-│   │   │   ├── OpportunityController.php
-│   │   │   ├── PipelineStageController.php
-│   │   │   ├── PriceBookController.php
-│   │   │   ├── ProductController.php
-│   │   │   ├── QuoteController.php
-│   │   │   ├── RolePermissionController.php
-│   │   │   ├── SalesTargetController.php
-│   │   │   ├── TagController.php
-│   │   │   └── UserController.php
+│   │   ├── Controllers/
+│   │   │   ├── Api/                         # JSON API controllers (Sanctum auth)
+│   │   │   │   ├── AccountController.php
+│   │   │   │   ├── ActivityController.php
+│   │   │   │   ├── AddressController.php
+│   │   │   │   ├── AuthController.php
+│   │   │   │   ├── ContactController.php
+│   │   │   │   ├── ForecastController.php
+│   │   │   │   ├── LeadController.php
+│   │   │   │   ├── NoteController.php
+│   │   │   │   ├── OpportunityController.php
+│   │   │   │   ├── PipelineStageController.php
+│   │   │   │   ├── PriceBookController.php
+│   │   │   │   ├── ProductController.php
+│   │   │   │   ├── QuoteController.php
+│   │   │   │   ├── RolePermissionController.php
+│   │   │   │   ├── SalesTargetController.php
+│   │   │   │   ├── TagController.php
+│   │   │   │   └── UserController.php
+│   │   │   │
+│   │   │   ├── AccountWebController.php     # Web Blade controllers (session auth)
+│   │   │   ├── ActivityWebController.php
+│   │   │   ├── ContactWebController.php
+│   │   │   ├── DashboardController.php
+│   │   │   ├── ForecastWebController.php
+│   │   │   ├── LeadWebController.php
+│   │   │   ├── OpportunityWebController.php
+│   │   │   ├── PriceBookWebController.php
+│   │   │   ├── ProductWebController.php
+│   │   │   ├── QuoteWebController.php
+│   │   │   ├── SettingsController.php
+│   │   │   └── WebAuthController.php
+│   │   │
 │   │   ├── Middleware/
-│   │   │   └── TenantScope.php         # Enforces tenant isolation per request
-│   │   ├── Requests/                   # Form request validation classes
+│   │   │   └── TenantScope.php              # Enforces tenant isolation (API)
+│   │   │
+│   │   ├── Requests/                        # Form validation request classes
 │   │   │   ├── Account/
 │   │   │   ├── Auth/
 │   │   │   ├── Contact/
@@ -145,27 +210,12 @@ navcrm/
 │   │   │   ├── Product/
 │   │   │   ├── Quote/
 │   │   │   └── SalesTarget/
-│   │   └── Resources/                  # API resource transformers (16 resources)
-│   │       ├── AccountResource.php
-│   │       ├── ActivityResource.php
-│   │       ├── AddressResource.php
-│   │       ├── ContactResource.php
-│   │       ├── LeadResource.php
-│   │       ├── NoteResource.php
-│   │       ├── OpportunityResource.php
-│   │       ├── PipelineStageResource.php
-│   │       ├── PriceBookEntryResource.php
-│   │       ├── PriceBookResource.php
-│   │       ├── ProductResource.php
-│   │       ├── QuoteLineItemResource.php
-│   │       ├── QuoteResource.php
-│   │       ├── SalesTargetResource.php
-│   │       ├── TagResource.php
-│   │       └── UserResource.php
+│   │   │
+│   │   └── Resources/                       # API resource transformers
 │   │
-│   ├── Models/                         # Eloquent models with BelongsToTenant trait
+│   ├── Models/
 │   │   ├── Concerns/
-│   │   │   └── BelongsToTenant.php     # Global scope trait for tenant isolation
+│   │   │   └── BelongsToTenant.php          # Global scope + auto tenant_id
 │   │   ├── Account.php
 │   │   ├── Activity.php
 │   │   ├── Address.php
@@ -185,298 +235,211 @@ navcrm/
 │   │   ├── Tenant.php
 │   │   └── User.php
 │   │
-│   ├── Providers/
-│   │   └── AppServiceProvider.php
-│   │
-│   └── Services/                       # Business logic services
+│   └── Services/
 │       ├── ForecastService.php
 │       ├── LeadConversionService.php
 │       ├── QuoteCalculationService.php
 │       └── QuotePdfService.php
 │
-├── bootstrap/
-│   ├── app.php
-│   └── providers.php
-│
-├── config/                             # Laravel configuration files
-│   ├── app.php
-│   ├── auth.php
-│   ├── cors.php
-│   ├── database.php
-│   ├── mail.php
-│   ├── permission.php
-│   └── ...
-│
 ├── database/
-│   ├── factories/                      # Model factories for testing
-│   │   ├── AccountFactory.php
-│   │   ├── ContactFactory.php
-│   │   ├── LeadFactory.php
-│   │   ├── TenantFactory.php
-│   │   └── UserFactory.php
-│   ├── migrations/                     # 27 migration files
+│   ├── migrations/                          # 27+ migration files
+│   ├── factories/                           # Model factories for testing/seeding
 │   └── seeders/
-│       ├── DatabaseSeeder.php
-│       ├── DemoDataSeeder.php
-│       └── RolePermissionSeeder.php
-│
-├── public/
-│   ├── index.php                       # Application entry point
-│   ├── css/
-│   │   └── navcrm-theme.css
-│   └── js/
-│       └── navcrm-theme.js
 │
 ├── resources/
 │   ├── css/
-│   │   └── app.css
+│   │   └── navcrm-theme.css                 # Custom theme variables & components
 │   ├── js/
 │   │   ├── app.js
-│   │   └── bootstrap.js
-│   └── views/                          # Blade templates
-│       ├── welcome.blade.php
+│   │   └── navcrm-theme.js                  # UI helpers (sidebar, dropdowns, toasts)
+│   └── views/
 │       ├── layouts/
-│       │   ├── app.blade.php           # Main authenticated layout
-│       │   └── auth.blade.php          # Auth layout
+│       │   ├── app.blade.php                # Authenticated layout (sidebar + topbar)
+│       │   └── auth.blade.php               # Auth pages layout
 │       ├── auth/
 │       │   ├── login.blade.php
-│       │   └── register.blade.php
+│       │   ├── register.blade.php
+│       │   └── forgot-password.blade.php
 │       ├── dashboard/
 │       │   └── index.blade.php
-│       ├── accounts/
-│       │   ├── index.blade.php
-│       │   ├── create.blade.php
-│       │   └── show.blade.php
 │       ├── contacts/
 │       │   ├── index.blade.php
-│       │   ├── create.blade.php
+│       │   ├── create.blade.php             # Shared create/edit form
+│       │   └── show.blade.php
+│       ├── accounts/
+│       │   ├── index.blade.php
+│       │   ├── create.blade.php             # Shared create/edit form
 │       │   └── show.blade.php
 │       ├── leads/
 │       │   ├── index.blade.php
-│       │   ├── create.blade.php
+│       │   ├── create.blade.php             # Shared create/edit form
 │       │   └── show.blade.php
-│       ├── opportunities/
-│       │   ├── index.blade.php
-│       │   ├── create.blade.php
-│       │   └── show.blade.php
-│       ├── quotes/
-│       │   ├── index.blade.php
-│       │   ├── create.blade.php
-│       │   ├── show.blade.php
-│       │   └── pdf.blade.php           # Quote PDF template (DomPDF)
-│       ├── price-books/
+│       ├── activities/
 │       │   └── index.blade.php
+│       ├── opportunities/
+│       │   ├── index.blade.php              # Kanban + table view
+│       │   ├── create.blade.php             # Shared create/edit form
+│       │   └── show.blade.php
 │       ├── products/
 │       │   ├── index.blade.php
-│       │   └── create.blade.php
-│       └── forecasts/
-│           └── index.blade.php
+│       │   └── create.blade.php             # Shared create/edit/show form
+│       ├── price-books/
+│       │   └── index.blade.php
+│       ├── quotes/
+│       │   ├── index.blade.php
+│       │   ├── create.blade.php             # Shared create/edit form
+│       │   ├── show.blade.php
+│       │   └── pdf.blade.php                # PDF template for dompdf
+│       ├── forecasts/
+│       │   └── index.blade.php
+│       ├── settings/
+│       │   ├── index.blade.php
+│       │   ├── profile.blade.php
+│       │   ├── users.blade.php
+│       │   └── roles.blade.php
+│       └── welcome.blade.php
 │
-├── routes/
-│   ├── api.php                         # All API routes
-│   ├── web.php                         # Web routes
-│   └── console.php
-│
-├── tests/
-│   ├── Feature/
-│   │   ├── Account/
-│   │   │   └── AccountCrudTest.php
-│   │   ├── Auth/
-│   │   │   ├── LoginTest.php
-│   │   │   └── RegisterTest.php
-│   │   ├── Contact/
-│   │   │   └── ContactCrudTest.php
-│   │   ├── Lead/
-│   │   │   └── LeadCrudTest.php
-│   │   └── TenantIsolationTest.php
-│   ├── Unit/
-│   │   └── Services/
-│   │       └── LeadConversionServiceTest.php
-│   └── TestCase.php
-│
-├── composer.json
-├── package.json
-├── vite.config.js
-├── phpunit.xml
-└── README.md
+└── routes/
+    ├── api.php                              # REST API routes (Sanctum + TenantScope)
+    └── web.php                              # Web routes (session auth)
 ```
 
-## Prerequisites
+---
 
-- PHP 8.2+
-- Composer
-- Node.js 20+
-- MySQL 8.0+
-- XAMPP (or equivalent local server)
+## Web Routes Summary
 
-## Setup
+```
+GET  /                          → redirect (dashboard or login)
+GET  /login                     → login form
+GET  /register                  → register form
+GET  /auth/login                → login form (named: auth.login.form)
+GET  /auth/register             → register form
+GET  /auth/forgot-password      → forgot password form
+POST /auth/login                → authenticate (named: auth.login)
+POST /auth/register             → create account + tenant (named: auth.register)
+POST /auth/logout               → sign out (named: auth.logout)
+POST /auth/forgot-password      → send reset link
 
-### 1. Clone the repository
+GET  /dashboard                 → dashboard
 
-```bash
-git clone <repository-url>
-cd navcrm
+GET|POST          /contacts          → list / create
+GET|PUT|DELETE    /contacts/{id}     → show / edit / update / delete
+GET|POST          /accounts          → list / create
+GET|PUT|DELETE    /accounts/{id}     → show / edit / update / delete
+GET|POST          /leads             → list / create
+GET|PUT|DELETE    /leads/{id}        → show / edit / update / delete
+POST              /leads/{id}/convert → convert to contact+account
+GET|POST          /opportunities     → list / create
+GET|PUT|DELETE    /opportunities/{id}→ show / edit / update / delete
+GET|POST          /products          → list / create
+GET|PUT|DELETE    /products/{id}     → show / edit / update / delete
+GET|POST          /quotes            → list / create
+GET|PUT|DELETE    /quotes/{id}       → show / edit / update / delete
+GET               /quotes/{id}/pdf  → download PDF
+
+GET               /price-books       → list + create modal
+GET               /activities        → activity timeline
+
+GET               /forecasts         → forecast dashboard
+
+GET               /settings          → settings home
+GET|PUT           /settings/profile  → profile
+PUT               /settings/password → change password
+GET|POST          /settings/users    → user list / invite
+PUT|DELETE        /settings/users/{id} → update / delete user
+GET               /settings/roles    → roles and permissions view
 ```
 
-### 2. Install dependencies
+---
 
-```bash
-composer install
-npm install
+## API Routes Summary
+
+All protected routes require `Authorization: Bearer {token}`.
+
+```
+GET  /api/health
+
+# Auth (public)
+POST /api/auth/register
+POST /api/auth/login
+POST /api/auth/forgot-password
+POST /api/auth/reset-password
+
+# Profile (protected)
+GET|PUT /api/profile
+PUT     /api/profile/password
+
+# Protected resource routes (Sanctum + active tenant required)
+/api/contacts        (CRUD + sync-tags, relationships)
+/api/accounts        (CRUD + contacts, children, addresses)
+/api/leads           (CRUD + convert, sync-tags)
+/api/tags            (CRUD)
+/api/activities      (list, create, delete)
+/api/notes           (list, create, update, delete)
+/api/pipeline-stages (CRUD + reorder)
+/api/opportunities   (CRUD + stage, team management)
+/api/products        (CRUD)
+/api/price-books     (CRUD + entries)
+/api/quotes          (CRUD + status update, PDF)
+/api/sales-targets   (CRUD)
+/api/forecasts       (summary, list)
+
+# Admin only (role:admin required)
+/api/users           (CRUD + sync-roles)
+/api/roles           (CRUD)
+/api/permissions     (list)
 ```
 
-### 3. Configure environment
+---
 
-```bash
-cp .env.example .env
+## Database Models & Key Relationships
 
-# Edit .env: set DB_DATABASE=navcrm, DB_USERNAME, DB_PASSWORD
-php artisan key:generate
-```
+| Model | Table | Key Relationships |
+|-------|-------|-------------------|
+| Tenant | tenants | hasMany Users |
+| User | users | belongsTo Tenant, hasRoles (Spatie) |
+| Contact | contacts | belongsToMany Accounts, morphToMany Tags, morphMany Activities/Notes, belongsToMany relatedContacts |
+| Account | accounts | belongsTo parent Account, hasMany children, belongsToMany Contacts, morphMany Addresses/Activities/Notes |
+| Lead | leads | morphToMany Tags, morphMany Activities/Notes, belongsTo convertedContact/convertedAccount |
+| PipelineStage | pipeline_stages | hasMany Opportunities |
+| Opportunity | opportunities | belongsTo PipelineStage/Account/Contact, hasMany Quotes, belongsToMany teamMembers (Users) |
+| Product | products | hasMany PriceBookEntries, QuoteLineItems |
+| PriceBook | price_books | hasMany Entries (PriceBookEntry) |
+| Quote | quotes | belongsTo Opportunity/Account/Contact, hasMany LineItems |
+| SalesTarget | sales_targets | belongsTo User |
+| Tag | tags | morphedByMany Contacts, Leads |
+| Activity | activities | morphTo (Contact/Account/Lead/Opportunity) |
+| Note | notes | morphTo (Contact/Account/Lead/Opportunity) |
+| Address | addresses | morphTo (Account) |
 
-### 4. Set up the database
+---
 
-```bash
-# Create database
-mysql -u root -e "CREATE DATABASE navcrm"
+## Roles & Permissions
 
-# Run migrations
-php artisan migrate
+| Role | Access |
+|------|--------|
+| **Admin** | Full access: all CRM modules + user management + settings |
+| **Manager** | Full CRM access, view reports, manage team members |
+| **Sales** | Create/edit contacts, leads, accounts, opportunities, quotes |
+| **Viewer** | Read-only access to all CRM data |
 
-# Seed roles, permissions, and demo data
-php artisan db:seed
-```
+---
 
-### 5. Build assets
-
-```bash
-npm run build
-# or for development with hot reload:
-npm run dev
-```
-
-### 6. Start the server
-
-```bash
-php artisan serve
-```
-
-The app will be available at `http://localhost:8000`.
-
-## Demo Accounts
-
-After running `php artisan db:seed`, you can log in with these demo accounts:
-
-| Email | Password | Role |
-|-------|----------|------|
-| `admin@acme.test` | `password` | Admin |
-| `manager@acme.test` | `password` | Manager |
-| `sales1@acme.test` | `password` | Sales |
-| `viewer@acme.test` | `password` | Viewer |
-
-## API Routes
-
-### Public
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/auth/register` | Register new tenant + user |
-| POST | `/api/auth/login` | Login and get token |
-| POST | `/api/auth/forgot-password` | Send password reset email |
-| POST | `/api/auth/reset-password` | Reset password with token |
-
-### Protected (requires Bearer token)
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/auth/logout` | Revoke current token |
-| GET | `/api/auth/me` | Get authenticated user |
-| GET/PUT | `/api/profile` | Get/update profile |
-| PUT | `/api/profile/password` | Change password |
-| CRUD | `/api/contacts` | Contact management |
-| CRUD | `/api/accounts` | Account management |
-| CRUD | `/api/leads` | Lead management |
-| CRUD | `/api/tags` | Tag management |
-| GET/POST/DELETE | `/api/activities` | Activity management |
-| GET/POST/PUT/DELETE | `/api/notes` | Note management |
-| CRUD | `/api/pipeline-stages` | Pipeline stage management |
-| POST | `/api/pipeline-stages/reorder` | Reorder pipeline stages |
-| CRUD | `/api/opportunities` | Opportunity management |
-| PUT | `/api/opportunities/{id}/stage` | Update opportunity stage (kanban) |
-| GET/POST/PUT/DELETE | `/api/opportunities/{id}/team` | Sales team management |
-| CRUD | `/api/products` | Product catalog |
-| CRUD | `/api/price-books` | Price book management |
-| POST/PUT/DELETE | `/api/price-books/{id}/entries` | Price book entries |
-| CRUD | `/api/quotes` | Quote management |
-| PUT | `/api/quotes/{id}/status` | Update quote status |
-| GET | `/api/quotes/{id}/pdf` | Download quote PDF |
-| CRUD | `/api/sales-targets` | Sales target management |
-| GET | `/api/forecasts` | Forecast data |
-| GET | `/api/forecasts/summary` | Forecast summary |
-
-### Admin Only (requires `admin` role)
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| CRUD | `/api/users` | User management |
-| POST | `/api/users/{id}/sync-roles` | Assign roles to user |
-| CRUD | `/api/roles` | Role management |
-| GET | `/api/permissions` | List all permissions |
-
-## Testing
+## Development
 
 ```bash
 # Run all tests
 php artisan test
 
-# Run specific test suite
-php artisan test --filter=AuthTest
-php artisan test --filter=ContactCrudTest
-php artisan test --filter=TenantIsolationTest
+# Format PHP code with Pint
+./vendor/bin/pint
+
+# Watch assets for changes
+npm run dev
+
+# List all web routes
+php artisan route:list --path="/"
+
+# List all API routes
+php artisan route:list --path=api
 ```
-
-Current test suite: **33 tests, 146 assertions** covering auth, CRUD operations, tenant isolation, and lead conversion.
-
-## Database Schema
-
-### Core Tables
-- `tenants` - Organizations/companies
-- `users` - Users with `tenant_id` scoping
-- `roles` / `permissions` - Spatie permission tables
-
-### CRM Tables
-- `contacts` - Contact records with address and social fields
-- `accounts` - Company records with parent/child hierarchy
-- `leads` - Lead records with status and score enums
-- `account_contact` - Pivot with role and `is_primary`
-- `contact_relationships` - Self-referencing with relationship type
-
-### SFA Tables
-- `pipeline_stages` - Configurable stages per tenant (position, probability, color, is_won/is_lost)
-- `opportunities` - Deals with amount, probability, close date, stage, owner
-- `opportunity_team` - Sales team pivot with role and split percentage
-- `products` - Product/service catalog with SKU, pricing, category
-- `price_books` - Named pricing lists (default/active flags)
-- `price_book_entries` - Per-product prices within a price book
-- `quotes` - Quote headers with auto-numbered quotes, discount/tax calculations
-- `quote_line_items` - Line items with product, quantity, unit price, discount
-- `sales_targets` - Monthly/quarterly/yearly quota targets per user or team
-- `forecast_entries` - Manual forecast overrides by category
-
-### Polymorphic Tables
-- `tags` / `taggables` - Tagging system for contacts and leads
-- `activities` - Activity log for contacts, accounts, leads, opportunities
-- `notes` - Notes for contacts, accounts, leads, opportunities
-- `addresses` - Billing/shipping addresses for accounts
-
-## Architecture Decisions
-
-1. **Single DB multi-tenancy** - `tenant_id` column with global scopes for simplicity
-2. **Token-based auth** - Sanctum tokens for API authentication
-3. **Polymorphic tables** - Activities, notes, addresses, tags shared across modules
-4. **PHP 8.2 enums** - Type-safe status and score values
-5. **Blade templates** - Server-side rendering with Vite-bundled assets
-6. **Quote PDF generation** - Server-side PDF rendering with barryvdh/laravel-dompdf
-7. **Configurable pipelines** - Tenant-specific pipeline stages with position ordering and color coding
-8. **Forecast calculations** - Service-based weighted pipeline and target vs actual computations
-
-## License
-
-MIT

@@ -17,7 +17,10 @@ class RolePermissionSeeder extends Seeder
         $guardName = 'web';
 
         // Define modules and actions
-        $modules = ['contacts', 'accounts', 'leads', 'users', 'roles', 'tags'];
+        $modules = [
+            'contacts', 'accounts', 'leads', 'users', 'roles', 'tags',
+            'opportunities', 'products', 'price-books', 'quotes', 'forecasts', 'sales-targets',
+        ];
         $actions = ['view', 'create', 'update', 'delete'];
 
         // Create permissions for each module x action combination
@@ -34,7 +37,7 @@ class RolePermissionSeeder extends Seeder
         }
 
         // Create special permissions
-        $specialPermissions = ['convert-leads', 'export-data', 'manage-settings'];
+        $specialPermissions = ['convert-leads', 'export-data', 'manage-settings', 'generate-quotes', 'manage-pipeline'];
         foreach ($specialPermissions as $permissionName) {
             $permission = Permission::firstOrCreate([
                 'name' => $permissionName,
@@ -63,8 +66,16 @@ class RolePermissionSeeder extends Seeder
                     ->orWhere('name', 'like', '%-accounts')
                     ->orWhere('name', 'like', '%-leads')
                     ->orWhere('name', 'like', '%-tags')
+                    ->orWhere('name', 'like', '%-opportunities')
+                    ->orWhere('name', 'like', '%-products')
+                    ->orWhere('name', 'like', '%-price-books')
+                    ->orWhere('name', 'like', '%-quotes')
+                    ->orWhere('name', 'like', '%-forecasts')
+                    ->orWhere('name', 'like', '%-sales-targets')
                     ->orWhere('name', 'convert-leads')
-                    ->orWhere('name', 'export-data');
+                    ->orWhere('name', 'export-data')
+                    ->orWhere('name', 'generate-quotes')
+                    ->orWhere('name', 'manage-pipeline');
             })
             ->get();
         $managerRole->syncPermissions($managerPermissions);
@@ -81,7 +92,13 @@ class RolePermissionSeeder extends Seeder
                     'view-accounts', 'create-accounts', 'update-accounts', 'delete-accounts',
                     'view-leads', 'create-leads', 'update-leads', 'delete-leads',
                     'view-tags', 'create-tags', 'update-tags', 'delete-tags',
+                    'view-opportunities', 'create-opportunities', 'update-opportunities', 'delete-opportunities',
+                    'view-products',
+                    'view-quotes', 'create-quotes', 'update-quotes',
+                    'view-forecasts',
+                    'view-sales-targets',
                     'convert-leads',
+                    'generate-quotes',
                 ]);
             })
             ->get();

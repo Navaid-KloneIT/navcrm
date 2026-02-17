@@ -109,8 +109,11 @@
                   <label class="ncv-label" for="parent_id">Parent Company</label>
                   <select class="ncv-select" id="parent_id" name="parent_id">
                     <option value="">— No Parent —</option>
-                    <option value="1">Acme Holdings Ltd</option>
-                    <option value="2">Globex Group</option>
+                    @foreach($parents ?? [] as $parent)
+                      <option value="{{ $parent->id }}" {{ old('parent_id', $account->parent_id ?? '') == $parent->id ? 'selected' : '' }}>
+                        {{ $parent->name }}
+                      </option>
+                    @endforeach
                   </select>
                 </div>
               </div>

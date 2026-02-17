@@ -91,12 +91,12 @@ function ContactTable({ contacts, loading, sortBy, sortDir, onSort }: ContactTab
   return (
     <DataTable
       columns={columns}
-      data={contacts as unknown as Record<string, unknown>[]}
+      data={contacts}
       loading={loading}
       sortBy={sortBy}
       sortDir={sortDir}
       onSort={onSort}
-      onRowClick={(item) => router.push(`/contacts/${(item as unknown as Contact).id}`)}
+      onRowClick={(item) => router.push(`/contacts/${item.id}`)}
       emptyTitle="No contacts found"
       emptyDescription="Get started by adding your first contact."
     />

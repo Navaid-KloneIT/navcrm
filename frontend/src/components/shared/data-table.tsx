@@ -35,7 +35,7 @@ interface DataTableProps<T> {
   skeletonRows?: number;
 }
 
-function DataTable<T extends Record<string, unknown>>({
+function DataTable<T extends Record<string, any>>({
   columns,
   data,
   loading = false,

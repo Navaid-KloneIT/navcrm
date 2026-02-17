@@ -94,12 +94,12 @@ function LeadTable({ leads, loading, sortBy, sortDir, onSort }: LeadTableProps) 
   return (
     <DataTable
       columns={columns}
-      data={leads as unknown as Record<string, unknown>[]}
+      data={leads}
       loading={loading}
       sortBy={sortBy}
       sortDir={sortDir}
       onSort={onSort}
-      onRowClick={(item) => router.push(`/leads/${(item as unknown as Lead).id}`)}
+      onRowClick={(item) => router.push(`/leads/${item.id}`)}
       emptyTitle="No leads found"
       emptyDescription="Get started by adding your first lead."
     />

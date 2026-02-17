@@ -5,3 +5,7 @@ export * from './account';
 export * from './lead';
 export * from './tag';
 export * from './activity';
+export * from './opportunity';
+export * from './product';
+export * from './quote';
+export * from './forecast';

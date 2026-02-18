@@ -129,6 +129,57 @@ php artisan serve
 - Target vs actual attainment tracking
 - Per-rep and team-level performance data
 
+### Marketing Automation Module
+
+#### Campaigns
+- Multi-type campaign management: Email, Webinar, Event, Digital Ads, Direct Mail
+- Status workflow: Draft → Active → Paused → Completed
+- Budget tracking: planned vs actual budget
+- Revenue tracking: target vs actual revenue
+- ROI calculation (auto-computed from actual revenue and spend)
+- Target lists with contact and lead segmentation
+- Linked email campaigns
+- Owner assignment and soft deletes
+
+#### Target Lists
+- Segment contacts and leads into named target lists per campaign
+- Sync contacts and leads via many-to-many pivot tables
+- Multiple target lists per campaign
+
+#### Email Campaigns
+- Linked to parent campaigns and email templates
+- A/B subject line testing (Subject A vs Subject B with winning variant tracking)
+- Scheduling: scheduled_at datetime, sent_at timestamp
+- Engagement metrics: total sent, opens, clicks, bounces, unsubscribes
+- Computed rates: open rate, click rate, bounce rate, unsubscribe rate
+- Status workflow: Draft → Scheduled → Sent → Cancelled
+- From name and from email configuration
+
+#### Email Templates
+- Reusable HTML email templates with subject and body
+- Active/inactive status flag
+- Linked to multiple email campaigns
+- Soft deletes
+
+#### Landing Pages
+- Slug-based public URL routing
+- SEO fields: meta title, meta description
+- Page view counter
+- Linked web form (optional embed)
+- Active/inactive toggle
+- Soft deletes
+
+#### Web Forms
+- Drag-and-drop dynamic field builder (JSON-stored field schema)
+- Field types: text, email, phone, textarea, select, checkbox, radio, date
+- Configurable submit button text and success message
+- Post-submit redirect URL support
+- Lead/contact auto-assignment to a specific user
+- Geography-based assignment flag
+- Submission tracking with total count
+- Submission-to-lead/contact conversion workflow
+- Embeddable on landing pages
+
 ### Dashboard
 - KPI cards: Contacts, Accounts, Leads, Open Opportunities, Closed Revenue
 - Recent activities feed
@@ -156,6 +207,9 @@ navcrm/
 │   ├── Enums/
 │   │   ├── ActivityType.php
 │   │   ├── AddressType.php
+│   │   ├── CampaignStatus.php           # draft, active, paused, completed
+│   │   ├── CampaignType.php             # email, webinar, event, digital_ads, direct_mail
+│   │   ├── EmailCampaignStatus.php
 │   │   ├── ForecastCategory.php
 │   │   ├── LeadScore.php
 │   │   ├── LeadStatus.php
@@ -169,8 +223,12 @@ navcrm/
 │   │   │   │   ├── ActivityController.php
 │   │   │   │   ├── AddressController.php
 │   │   │   │   ├── AuthController.php
+│   │   │   │   ├── CampaignController.php
 │   │   │   │   ├── ContactController.php
+│   │   │   │   ├── EmailCampaignController.php
+│   │   │   │   ├── EmailTemplateController.php
 │   │   │   │   ├── ForecastController.php
+│   │   │   │   ├── LandingPageController.php
 │   │   │   │   ├── LeadController.php
 │   │   │   │   ├── NoteController.php
 │   │   │   │   ├── OpportunityController.php
@@ -181,20 +239,26 @@ navcrm/
 │   │   │   │   ├── RolePermissionController.php
 │   │   │   │   ├── SalesTargetController.php
 │   │   │   │   ├── TagController.php
-│   │   │   │   └── UserController.php
+│   │   │   │   ├── UserController.php
+│   │   │   │   └── WebFormController.php
 │   │   │   │
 │   │   │   ├── AccountWebController.php     # Web Blade controllers (session auth)
 │   │   │   ├── ActivityWebController.php
+│   │   │   ├── CampaignWebController.php
 │   │   │   ├── ContactWebController.php
 │   │   │   ├── DashboardController.php
+│   │   │   ├── EmailCampaignWebController.php
+│   │   │   ├── EmailTemplateWebController.php
 │   │   │   ├── ForecastWebController.php
+│   │   │   ├── LandingPageWebController.php
 │   │   │   ├── LeadWebController.php
 │   │   │   ├── OpportunityWebController.php
 │   │   │   ├── PriceBookWebController.php
 │   │   │   ├── ProductWebController.php
 │   │   │   ├── QuoteWebController.php
 │   │   │   ├── SettingsController.php
-│   │   │   └── WebAuthController.php
+│   │   │   ├── WebAuthController.php
+│   │   │   └── WebFormWebController.php
 │   │   │
 │   │   ├── Middleware/
 │   │   │   └── TenantScope.php              # Enforces tenant isolation (API)
@@ -219,8 +283,13 @@ navcrm/
 │   │   ├── Account.php
 │   │   ├── Activity.php
 │   │   ├── Address.php
+│   │   ├── Campaign.php
+│   │   ├── CampaignTargetList.php
 │   │   ├── Contact.php
+│   │   ├── EmailCampaign.php
+│   │   ├── EmailTemplate.php
 │   │   ├── ForecastEntry.php
+│   │   ├── LandingPage.php
 │   │   ├── Lead.php
 │   │   ├── Note.php
 │   │   ├── Opportunity.php
@@ -233,7 +302,9 @@ navcrm/
 │   │   ├── SalesTarget.php
 │   │   ├── Tag.php
 │   │   ├── Tenant.php
-│   │   └── User.php
+│   │   ├── User.php
+│   │   ├── WebForm.php
+│   │   └── WebFormSubmission.php
 │   │
 │   └── Services/
 │       ├── ForecastService.php
@@ -242,7 +313,7 @@ navcrm/
 │       └── QuotePdfService.php
 │
 ├── database/
-│   ├── migrations/                          # 27+ migration files
+│   ├── migrations/                          # 36+ migration files
 │   ├── factories/                           # Model factories for testing/seeding
 │   └── seeders/
 │
@@ -292,6 +363,27 @@ navcrm/
 │       │   └── pdf.blade.php                # PDF template for dompdf
 │       ├── forecasts/
 │       │   └── index.blade.php
+│       ├── marketing/
+│       │   ├── campaigns/
+│       │   │   ├── index.blade.php
+│       │   │   ├── create.blade.php         # Shared create/edit form
+│       │   │   └── show.blade.php
+│       │   ├── email-campaigns/
+│       │   │   ├── index.blade.php
+│       │   │   ├── create.blade.php         # Shared create/edit form
+│       │   │   └── show.blade.php
+│       │   ├── email-templates/
+│       │   │   ├── index.blade.php
+│       │   │   └── create.blade.php         # Shared create/edit form
+│       │   ├── landing-pages/
+│       │   │   ├── index.blade.php
+│       │   │   ├── create.blade.php         # Shared create/edit form
+│       │   │   └── show.blade.php
+│       │   └── web-forms/
+│       │       ├── index.blade.php
+│       │       ├── create.blade.php         # Dynamic field builder
+│       │       ├── show.blade.php           # Live preview + submissions list
+│       │       └── _field.blade.php         # Reusable drag-and-drop field row
 │       ├── settings/
 │       │   ├── index.blade.php
 │       │   ├── profile.blade.php
@@ -342,6 +434,18 @@ GET               /activities        → activity timeline
 
 GET               /forecasts         → forecast dashboard
 
+GET|POST          /marketing/campaigns                → list / create
+GET|PUT|DELETE    /marketing/campaigns/{id}           → show / edit / update / delete
+GET|POST          /marketing/email-campaigns          → list / create
+GET|PUT|DELETE    /marketing/email-campaigns/{id}     → show / edit / update / delete
+GET|POST          /marketing/email-templates          → list / create
+GET|PUT|DELETE    /marketing/email-templates/{id}     → edit / update / delete
+GET|POST          /marketing/landing-pages            → list / create
+GET|PUT|DELETE    /marketing/landing-pages/{id}       → show / edit / update / delete
+GET|POST          /marketing/web-forms                → list / create
+GET|PUT|DELETE    /marketing/web-forms/{id}           → show / edit / update / delete
+POST              /marketing/web-forms/submissions/{id}/convert → convert to lead/contact
+
 GET               /settings          → settings home
 GET|PUT           /settings/profile  → profile
 PUT               /settings/password → change password
@@ -384,6 +488,16 @@ PUT     /api/profile/password
 /api/sales-targets   (CRUD)
 /api/forecasts       (summary, list)
 
+# Marketing Automation (protected)
+/api/campaigns                                        (CRUD + target-lists management)
+/api/campaign-target-lists/{id}/sync-contacts         (sync contacts to target list)
+/api/campaign-target-lists/{id}/sync-leads            (sync leads to target list)
+/api/email-templates                                  (CRUD)
+/api/email-campaigns                                  (CRUD + status update)
+/api/landing-pages                                    (CRUD)
+/api/web-forms                                        (CRUD + submissions list)
+/api/web-form-submissions/{id}/convert                (convert submission to lead/contact)
+
 # Admin only (role:admin required)
 /api/users           (CRUD + sync-roles)
 /api/roles           (CRUD)
@@ -411,6 +525,13 @@ PUT     /api/profile/password
 | Activity | activities | morphTo (Contact/Account/Lead/Opportunity) |
 | Note | notes | morphTo (Contact/Account/Lead/Opportunity) |
 | Address | addresses | morphTo (Account) |
+| Campaign | campaigns | hasMany CampaignTargetLists, EmailCampaigns |
+| CampaignTargetList | campaign_target_lists | belongsTo Campaign, belongsToMany Contacts/Leads |
+| EmailTemplate | email_templates | hasMany EmailCampaigns |
+| EmailCampaign | email_campaigns | belongsTo Campaign, EmailTemplate |
+| LandingPage | landing_pages | belongsTo WebForm |
+| WebForm | web_forms | hasMany WebFormSubmissions, LandingPages |
+| WebFormSubmission | web_form_submissions | belongsTo WebForm |
 
 ---
 

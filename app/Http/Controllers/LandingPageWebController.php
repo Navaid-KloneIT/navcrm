@@ -34,9 +34,10 @@ class LandingPageWebController extends Controller
 
     public function create(): View
     {
-        $forms = WebForm::where('is_active', true)->orderBy('name')->get(['id', 'name']);
+        $forms       = WebForm::where('is_active', true)->orderBy('name')->get(['id', 'name']);
+        $landingPage = null;
 
-        return view('marketing.landing-pages.create', compact('forms'));
+        return view('marketing.landing-pages.create', compact('landingPage', 'forms'));
     }
 
     public function store(Request $request): RedirectResponse

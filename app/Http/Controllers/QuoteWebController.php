@@ -45,8 +45,9 @@ class QuoteWebController extends Controller
         $opportunities = Opportunity::orderBy('name')->get(['id', 'name']);
         $products      = Product::where('is_active', true)->orderBy('name')->get();
         $priceBooks    = PriceBook::where('is_active', true)->orderBy('name')->get(['id', 'name', 'is_default']);
+        $quote         = null;
 
-        return view('quotes.create', compact('accounts', 'contacts', 'opportunities', 'products', 'priceBooks'));
+        return view('quotes.create', compact('quote', 'accounts', 'contacts', 'opportunities', 'products', 'priceBooks'));
     }
 
     public function store(Request $request): RedirectResponse

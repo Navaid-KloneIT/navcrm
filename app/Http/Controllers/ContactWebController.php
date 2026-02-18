@@ -39,8 +39,9 @@ class ContactWebController extends Controller
         $accounts = Account::orderBy('name')->get(['id', 'name']);
         $tags     = Tag::orderBy('name')->get(['id', 'name']);
         $owners   = User::where('is_active', true)->orderBy('name')->get(['id', 'name']);
+        $contact  = null;
 
-        return view('contacts.create', compact('accounts', 'tags', 'owners'));
+        return view('contacts.create', compact('contact', 'accounts', 'tags', 'owners'));
     }
 
     public function store(Request $request): RedirectResponse

@@ -25,7 +25,9 @@
       "Bash(\"/c/Program Files/Ampps/php82/php.exe\" --version)",
       "Bash(\"/c/xampp8/php/php.exe\" --version)",
       "Bash(test:*)",
-      "Bash(\"e:/Web Projects/navcrm/README.md\":*)"
+      "Bash(\"e:/Web Projects/navcrm/README.md\":*)",
+      "Bash(cmd //c:*)",
+      "Bash(findstr:*)"
     ]
   }
 }

@@ -45,12 +45,13 @@ class OpportunityWebController extends Controller
 
     public function create(): View
     {
-        $stages   = PipelineStage::orderBy('position')->get(['id', 'name', 'probability']);
-        $accounts = Account::orderBy('name')->get(['id', 'name']);
-        $contacts = Contact::orderBy('first_name')->get(['id', 'first_name', 'last_name']);
-        $owners   = User::where('is_active', true)->orderBy('name')->get(['id', 'name']);
+        $stages      = PipelineStage::orderBy('position')->get(['id', 'name', 'probability']);
+        $accounts    = Account::orderBy('name')->get(['id', 'name']);
+        $contacts    = Contact::orderBy('first_name')->get(['id', 'first_name', 'last_name']);
+        $owners      = User::where('is_active', true)->orderBy('name')->get(['id', 'name']);
+        $opportunity = null;
 
-        return view('opportunities.create', compact('stages', 'accounts', 'contacts', 'owners'));
+        return view('opportunities.create', compact('opportunity', 'stages', 'accounts', 'contacts', 'owners'));
     }
 
     public function store(Request $request): RedirectResponse

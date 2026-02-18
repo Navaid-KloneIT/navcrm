@@ -31,9 +31,10 @@ class WebFormWebController extends Controller
 
     public function create(): View
     {
-        $users = User::where('is_active', true)->orderBy('name')->get(['id', 'name']);
+        $users   = User::where('is_active', true)->orderBy('name')->get(['id', 'name']);
+        $webForm = null;
 
-        return view('marketing.web-forms.create', compact('users'));
+        return view('marketing.web-forms.create', compact('webForm', 'users'));
     }
 
     public function store(Request $request): RedirectResponse

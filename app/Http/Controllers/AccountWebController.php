@@ -35,8 +35,9 @@ class AccountWebController extends Controller
     {
         $parents = Account::orderBy('name')->get(['id', 'name']);
         $owners  = User::where('is_active', true)->orderBy('name')->get(['id', 'name']);
+        $account = null;
 
-        return view('accounts.create', compact('parents', 'owners'));
+        return view('accounts.create', compact('account', 'parents', 'owners'));
     }
 
     public function store(Request $request): RedirectResponse

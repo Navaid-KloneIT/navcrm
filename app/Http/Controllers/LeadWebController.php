@@ -46,8 +46,9 @@ class LeadWebController extends Controller
     {
         $tags   = Tag::orderBy('name')->get(['id', 'name']);
         $owners = User::where('is_active', true)->orderBy('name')->get(['id', 'name']);
+        $lead   = null;
 
-        return view('leads.create', compact('tags', 'owners'));
+        return view('leads.create', compact('lead', 'tags', 'owners'));
     }
 
     public function store(Request $request): RedirectResponse

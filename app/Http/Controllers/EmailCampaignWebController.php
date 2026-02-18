@@ -36,11 +36,12 @@ class EmailCampaignWebController extends Controller
 
     public function create(): View
     {
-        $campaigns = Campaign::orderBy('name')->get(['id', 'name']);
-        $templates  = EmailTemplate::where('is_active', true)->orderBy('name')->get(['id', 'name']);
-        $owners     = User::where('is_active', true)->orderBy('name')->get(['id', 'name']);
+        $campaigns     = Campaign::orderBy('name')->get(['id', 'name']);
+        $templates     = EmailTemplate::where('is_active', true)->orderBy('name')->get(['id', 'name']);
+        $owners        = User::where('is_active', true)->orderBy('name')->get(['id', 'name']);
+        $emailCampaign = null;
 
-        return view('marketing.email-campaigns.create', compact('campaigns', 'templates', 'owners'));
+        return view('marketing.email-campaigns.create', compact('emailCampaign', 'campaigns', 'templates', 'owners'));
     }
 
     public function store(Request $request): RedirectResponse

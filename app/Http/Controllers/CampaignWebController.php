@@ -40,9 +40,10 @@ class CampaignWebController extends Controller
 
     public function create(): View
     {
-        $owners = User::where('is_active', true)->orderBy('name')->get(['id', 'name']);
+        $owners   = User::where('is_active', true)->orderBy('name')->get(['id', 'name']);
+        $campaign = null;
 
-        return view('marketing.campaigns.create', compact('owners'));
+        return view('marketing.campaigns.create', compact('campaign', 'owners'));
     }
 
     public function store(Request $request): RedirectResponse

@@ -1131,6 +1131,7 @@ a:hover { color: var(--bs-link-hover-color); }
   padding: .75rem;
 }
 .sidebar-collapsed .ncv-nav-item::before { display: none; }
+.sidebar-collapsed .ncv-nav-text { display: none; }
 .sidebar-collapsed .ncv-user-card { justify-content: center; padding: .5rem; }
 
 /* --------------------------------------------------------------------------- *

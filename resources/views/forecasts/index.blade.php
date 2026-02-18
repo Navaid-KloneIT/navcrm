@@ -243,27 +243,9 @@
         </div>
       </div>
       <div class="ncv-card-body">
-        {{-- Bar chart (CSS, max value ~200k per month) --}}
-        <div class="fcst-chart-wrap" id="fcstChart">
-          @foreach([
-            ['m'=>'Jan','quota'=>160,'actual'=>148,'pipe'=>38],
-            ['m'=>'Feb','quota'=>160,'actual'=>112,'pipe'=>85],
-            ['m'=>'Mar','quota'=>160,'actual'=>52, 'pipe'=>75],
-          ] as $mo)
-          <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;height:100%;">
-            <div class="fcst-chart-group" style="height:100%;width:100%;">
-              <div class="fcst-bar bar-quota"    style="height:{{ $mo['quota'] }}%;"></div>
-              <div class="fcst-bar bar-actual"   style="height:{{ $mo['actual'] }}%;"></div>
-              <div class="fcst-bar bar-pipeline" style="height:{{ $mo['pipe'] }}%;"></div>
-            </div>
-          </div>
-          @endforeach
-        </div>
-        <div class="fcst-chart-labels">
-          @foreach(['January','February','March'] as $ml)
-          <span>{{ $ml }}</span>
-          @endforeach
-        </div>
+        {{-- Bar chart (JS-rendered, max value = quota = 100%) --}}
+        <div class="fcst-chart-wrap" id="fcstChart"></div>
+        <div class="fcst-chart-labels" id="fcstLabels"></div>
         {{-- Y-axis labels --}}
         <div style="display:flex;justify-content:space-between;margin-top:.5rem;">
           @foreach(['$0','$40k','$80k','$120k','$160k'] as $yl)
@@ -653,14 +635,77 @@
 
 @push('scripts')
 <script>
-  // Period toggle
+  // ── Chart datasets (bars = [quota%, actual%, pipeline%] per column) ──────
+  const CHART_DATA = {
+    monthly: {
+      'q1-2026': { sub: 'Q1 2026 · Jan – Mar',    labels: ['January','February','March'],          bars: [[100,93,24],[100,70,53],[100,33,47]] },
+      'q4-2025': { sub: 'Q4 2025 · Oct – Dec',    labels: ['October','November','December'],       bars: [[100,88,20],[100,96,12],[100,78,30]] },
+      'q3-2025': { sub: 'Q3 2025 · Jul – Sep',    labels: ['July','August','September'],           bars: [[100,82,28],[100,91,15],[100,67,40]] },
+      'q2-2025': { sub: 'Q2 2025 · Apr – Jun',    labels: ['April','May','June'],                  bars: [[100,74,38],[100,86,22],[100,79,35]] },
+    },
+    quarterly: {
+      'q1-2026': { sub: '2026 · Quarterly View',  labels: ['Q1 2026','Q2 2026','Q3 2026','Q4 2026'], bars: [[100,65,41],[100,0,82],[100,0,68],[100,0,54]] },
+      'q4-2025': { sub: '2025 · Quarterly View',  labels: ['Q1 2025','Q2 2025','Q3 2025','Q4 2025'], bars: [[100,85,15],[100,80,20],[100,80,20],[100,86,14]] },
+      'q3-2025': { sub: '2025 · Quarterly View',  labels: ['Q1 2025','Q2 2025','Q3 2025','Q4 2025'], bars: [[100,85,15],[100,80,20],[100,80,20],[100,0,55]] },
+      'q2-2025': { sub: '2025 · Quarterly View',  labels: ['Q1 2025','Q2 2025','Q3 2025','Q4 2025'], bars: [[100,85,15],[100,80,20],[100,0,68],[100,0,54]] },
+    },
+    annual: {
+      'q1-2026': { sub: 'Annual Comparison',      labels: ['FY 2024','FY 2025','FY 2026 YTD'],       bars: [[100,92,8],[100,88,12],[100,65,41]] },
+      'q4-2025': { sub: 'Annual Comparison',      labels: ['FY 2023','FY 2024','FY 2025'],            bars: [[100,78,22],[100,88,12],[100,86,14]] },
+      'q3-2025': { sub: 'Annual Comparison',      labels: ['FY 2023','FY 2024','FY 2025 YTD'],       bars: [[100,78,22],[100,88,12],[100,80,20]] },
+      'q2-2025': { sub: 'Annual Comparison',      labels: ['FY 2023','FY 2024','FY 2025 YTD'],       bars: [[100,78,22],[100,88,12],[100,75,25]] },
+    },
+  };
+
+  let activePeriodType = 'quarterly';
+  let activePeriodKey  = 'q1-2026';
+
+  function renderChart() {
+    const data = (CHART_DATA[activePeriodType] || {})[activePeriodKey];
+    if (!data) return;
+
+    // Update page subtitle
+    const sub = document.querySelector('.ncv-page-subtitle');
+    if (sub) sub.textContent = data.sub;
+
+    // Render bars
+    const chart  = document.getElementById('fcstChart');
+    const labels = document.getElementById('fcstLabels');
+    if (!chart || !labels) return;
+
+    chart.innerHTML = data.bars.map(function (b) {
+      return '<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;height:100%;">' +
+        '<div class="fcst-chart-group" style="height:100%;width:100%;">' +
+          '<div class="fcst-bar bar-quota"    style="height:' + b[0] + '%;"></div>' +
+          '<div class="fcst-bar bar-actual"   style="height:' + b[1] + '%;"></div>' +
+          '<div class="fcst-bar bar-pipeline" style="height:' + b[2] + '%;"></div>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+
+    labels.innerHTML = data.labels.map(function (l) {
+      return '<span>' + l + '</span>';
+    }).join('');
+  }
+
+  // Period type toggle (Monthly / Quarterly / Annual)
   function setPeriod(period, btn) {
     document.querySelectorAll('.ncv-period-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
-    // In a real app, reload data for the selected period
+    activePeriodType = period;
+    renderChart();
   }
 
-  // Category view toggle (Product Line / Territory)
+  // Quarter / period select dropdown
+  document.getElementById('periodSelect').addEventListener('change', function () {
+    activePeriodKey = this.value;
+    renderChart();
+  });
+
+  // Initial render
+  renderChart();
+
+  // ── Category view toggle (Product Line / Territory) ───────────────────────
   function setCatView(view, btn) {
     document.querySelectorAll('#catViewProduct, #catViewTerritory').forEach(el => el.style.display = 'none');
     document.getElementById('catView' + view.charAt(0).toUpperCase() + view.slice(1)).style.display = '';
@@ -668,7 +713,7 @@
     btn.classList.add('active');
   }
 
-  // Pipeline table live search
+  // ── Pipeline table live search ─────────────────────────────────────────────
   function filterPipeline(q) {
     const rows = document.querySelectorAll('.pipeline-row');
     const term = q.toLowerCase();
@@ -677,7 +722,7 @@
     });
   }
 
-  // Pipeline table stage filter
+  // ── Pipeline table stage filter ────────────────────────────────────────────
   function filterPipelineStage(stage) {
     const rows = document.querySelectorAll('.pipeline-row');
     rows.forEach(r => {

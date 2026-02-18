@@ -37,7 +37,7 @@ Route::get('/health', function () {
 });
 
 // Public auth routes
-Route::prefix('auth')->group(function () {
+Route::name('api.')->prefix('auth')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
     Route::post('/login', [AuthController::class, 'login']);
     Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
@@ -45,7 +45,7 @@ Route::prefix('auth')->group(function () {
 });
 
 // Protected routes
-Route::middleware(['auth:sanctum', App\Http\Middleware\TenantScope::class])->group(function () {
+Route::name('api.')->middleware(['auth:sanctum', App\Http\Middleware\TenantScope::class])->group(function () {
     // Auth routes
     Route::post('/auth/logout', [AuthController::class, 'logout']);
     Route::get('/auth/me', [AuthController::class, 'me']);

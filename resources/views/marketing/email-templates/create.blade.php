@@ -115,7 +115,7 @@
                 <button type="button" class="toolbar-btn" onclick="insertSnippet('&lt;a href=&quot;#&quot; style=&quot;background:#2563eb;color:#fff;padding:10px 20px;border-radius:6px;text-decoration:none;&quot;&gt;CTA Button&lt;/a&gt;')">
                   Button
                 </button>
-                <button type="button" class="toolbar-btn" onclick="insertSnippet('{{ \'{{\' }}first_name{{ \'}}\' }}')">
+                <button type="button" class="toolbar-btn" onclick="insertSnippet('@{{first_name}}')">
                   <i class="bi bi-person"></i> Name
                 </button>
               </div>

@@ -101,7 +101,7 @@
                 <div class="col-12 col-md-4">
                   <label class="ncv-label" for="close_date">Expected Close Date <span class="required">*</span></label>
                   <input type="date" class="ncv-input" id="close_date" name="close_date"
-                         value="{{ old('close_date', $opportunity->close_date?->format('Y-m-d') ?? date('Y-m-d', strtotime('+30 days'))) }}"
+                         value="{{ old('close_date', $opportunity?->close_date?->format('Y-m-d') ?? date('Y-m-d', strtotime('+30 days'))) }}"
                          required />
                 </div>
                 <div class="col-12 col-md-4">

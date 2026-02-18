@@ -17,6 +17,13 @@ use App\Http\Controllers\Api\RolePermissionController;
 use App\Http\Controllers\Api\SalesTargetController;
 use App\Http\Controllers\Api\TagController;
 use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\Api\CampaignController;
+use App\Http\Controllers\Api\EmailTemplateController;
+use App\Http\Controllers\Api\EmailCampaignController;
+use App\Http\Controllers\Api\LandingPageController;
+use App\Http\Controllers\Api\WebFormController;
+use App\Models\CampaignTargetList;
+use App\Models\WebFormSubmission;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -123,6 +130,34 @@ Route::middleware(['auth:sanctum', App\Http\Middleware\TenantScope::class])->gro
     // Forecasting
     Route::get('/forecasts', [ForecastController::class, 'index']);
     Route::get('/forecasts/summary', [ForecastController::class, 'summary']);
+
+    // =====================================================
+    // Marketing Automation
+    // =====================================================
+
+    // Campaigns
+    Route::apiResource('campaigns', CampaignController::class);
+    Route::get('/campaigns/{campaign}/target-lists',          [CampaignController::class, 'targetLists']);
+    Route::post('/campaigns/{campaign}/target-lists',         [CampaignController::class, 'storeTargetList']);
+    Route::put('/campaign-target-lists/{targetList}',         [CampaignController::class, 'updateTargetList']);
+    Route::delete('/campaign-target-lists/{targetList}',      [CampaignController::class, 'destroyTargetList']);
+    Route::post('/campaign-target-lists/{targetList}/sync-contacts', [CampaignController::class, 'syncContacts']);
+    Route::post('/campaign-target-lists/{targetList}/sync-leads',    [CampaignController::class, 'syncLeads']);
+
+    // Email Templates
+    Route::apiResource('email-templates', EmailTemplateController::class);
+
+    // Email Campaigns
+    Route::apiResource('email-campaigns', EmailCampaignController::class);
+    Route::put('/email-campaigns/{emailCampaign}/status', [EmailCampaignController::class, 'updateStatus']);
+
+    // Landing Pages
+    Route::apiResource('landing-pages', LandingPageController::class);
+
+    // Web Forms
+    Route::apiResource('web-forms', WebFormController::class);
+    Route::get('/web-forms/{webForm}/submissions',            [WebFormController::class, 'submissions']);
+    Route::post('/web-form-submissions/{submission}/convert', [WebFormController::class, 'convertSubmission']);
 
     // Admin routes
     Route::middleware(['role:admin'])->group(function () {

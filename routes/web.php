@@ -12,6 +12,11 @@ use App\Http\Controllers\QuoteWebController;
 use App\Http\Controllers\ForecastWebController;
 use App\Http\Controllers\ActivityWebController;
 use App\Http\Controllers\SettingsController;
+use App\Http\Controllers\CampaignWebController;
+use App\Http\Controllers\EmailTemplateWebController;
+use App\Http\Controllers\EmailCampaignWebController;
+use App\Http\Controllers\LandingPageWebController;
+use App\Http\Controllers\WebFormWebController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -131,6 +136,67 @@ Route::middleware(['auth'])->group(function () {
 
     // ── Forecasts ─────────────────────────────────────────────────────────
     Route::get('/forecasts', [ForecastWebController::class, 'index'])->name('forecasts.index');
+
+    // ── Marketing Automation ───────────────────────────────────────────────
+    Route::prefix('marketing')->name('marketing.')->group(function () {
+
+        // Campaigns
+        Route::resource('campaigns', CampaignWebController::class)->names([
+            'index'   => 'campaigns.index',
+            'create'  => 'campaigns.create',
+            'store'   => 'campaigns.store',
+            'show'    => 'campaigns.show',
+            'edit'    => 'campaigns.edit',
+            'update'  => 'campaigns.update',
+            'destroy' => 'campaigns.destroy',
+        ]);
+
+        // Email Templates
+        Route::resource('email-templates', EmailTemplateWebController::class)->names([
+            'index'   => 'email-templates.index',
+            'create'  => 'email-templates.create',
+            'store'   => 'email-templates.store',
+            'edit'    => 'email-templates.edit',
+            'update'  => 'email-templates.update',
+            'destroy' => 'email-templates.destroy',
+        ])->except(['show']);
+
+        // Email Campaigns
+        Route::resource('email-campaigns', EmailCampaignWebController::class)->names([
+            'index'   => 'email-campaigns.index',
+            'create'  => 'email-campaigns.create',
+            'store'   => 'email-campaigns.store',
+            'show'    => 'email-campaigns.show',
+            'edit'    => 'email-campaigns.edit',
+            'update'  => 'email-campaigns.update',
+            'destroy' => 'email-campaigns.destroy',
+        ]);
+
+        // Landing Pages
+        Route::resource('landing-pages', LandingPageWebController::class)->names([
+            'index'   => 'landing-pages.index',
+            'create'  => 'landing-pages.create',
+            'store'   => 'landing-pages.store',
+            'show'    => 'landing-pages.show',
+            'edit'    => 'landing-pages.edit',
+            'update'  => 'landing-pages.update',
+            'destroy' => 'landing-pages.destroy',
+        ]);
+
+        // Web Forms
+        Route::resource('web-forms', WebFormWebController::class)->names([
+            'index'   => 'web-forms.index',
+            'create'  => 'web-forms.create',
+            'store'   => 'web-forms.store',
+            'show'    => 'web-forms.show',
+            'edit'    => 'web-forms.edit',
+            'update'  => 'web-forms.update',
+            'destroy' => 'web-forms.destroy',
+        ]);
+        Route::post('/web-forms/submissions/{submission}/convert',
+            [WebFormWebController::class, 'convertSubmission']
+        )->name('web-forms.submissions.convert');
+    });
 
     // ── Settings ──────────────────────────────────────────────────────────
     Route::prefix('settings')->name('settings.')->group(function () {

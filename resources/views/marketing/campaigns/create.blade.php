@@ -102,12 +102,12 @@
                 <div class="col-12">
                   <label class="ncv-label" for="start_date">Start Date</label>
                   <input type="date" class="ncv-input" id="start_date" name="start_date"
-                         value="{{ old('start_date', $campaign->start_date?->format('Y-m-d') ?? '') }}" />
+                         value="{{ old('start_date', $campaign?->start_date?->format('Y-m-d') ?? '') }}" />
                 </div>
                 <div class="col-12">
                   <label class="ncv-label" for="end_date">End Date</label>
                   <input type="date" class="ncv-input" id="end_date" name="end_date"
-                         value="{{ old('end_date', $campaign->end_date?->format('Y-m-d') ?? '') }}" />
+                         value="{{ old('end_date', $campaign?->end_date?->format('Y-m-d') ?? '') }}" />
                 </div>
                 <div class="col-12">
                   <label class="ncv-label" for="owner_id">Campaign Owner</label>

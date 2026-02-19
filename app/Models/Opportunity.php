@@ -100,6 +100,11 @@ class Opportunity extends Model
         return $this->morphToMany(Tag::class, 'taggable');
     }
 
+    public function expenses(): HasMany
+    {
+        return $this->hasMany(Expense::class);
+    }
+
     public function getWeightedAmountAttribute(): float
     {
         return round((float) $this->amount * ($this->probability / 100), 2);

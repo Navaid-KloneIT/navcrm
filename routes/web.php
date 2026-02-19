@@ -21,6 +21,10 @@ use App\Http\Controllers\TicketWebController;
 use App\Http\Controllers\KbArticleWebController;
 use App\Http\Controllers\PortalController;
 use App\Http\Controllers\PortalTicketController;
+use App\Http\Controllers\TaskWebController;
+use App\Http\Controllers\CalendarEventWebController;
+use App\Http\Controllers\CallLogWebController;
+use App\Http\Controllers\EmailLogWebController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -250,6 +254,54 @@ Route::middleware(['auth'])->group(function () {
             'edit'    => 'kb-articles.edit',
             'update'  => 'kb-articles.update',
             'destroy' => 'kb-articles.destroy',
+        ]);
+    });
+
+    // ── Activity & Communication Management ───────────────────────────────
+    Route::prefix('activity')->name('activity.')->group(function () {
+
+        // Tasks
+        Route::resource('tasks', TaskWebController::class)->names([
+            'index'   => 'tasks.index',
+            'create'  => 'tasks.create',
+            'store'   => 'tasks.store',
+            'show'    => 'tasks.show',
+            'edit'    => 'tasks.edit',
+            'update'  => 'tasks.update',
+            'destroy' => 'tasks.destroy',
+        ]);
+
+        // Calendar Events
+        Route::resource('calendar', CalendarEventWebController::class)->names([
+            'index'   => 'calendar.index',
+            'create'  => 'calendar.create',
+            'store'   => 'calendar.store',
+            'show'    => 'calendar.show',
+            'edit'    => 'calendar.edit',
+            'update'  => 'calendar.update',
+            'destroy' => 'calendar.destroy',
+        ]);
+
+        // Call Logs
+        Route::resource('calls', CallLogWebController::class)->names([
+            'index'   => 'calls.index',
+            'create'  => 'calls.create',
+            'store'   => 'calls.store',
+            'show'    => 'calls.show',
+            'edit'    => 'calls.edit',
+            'update'  => 'calls.update',
+            'destroy' => 'calls.destroy',
+        ]);
+
+        // Email Logs
+        Route::resource('emails', EmailLogWebController::class)->names([
+            'index'   => 'emails.index',
+            'create'  => 'emails.create',
+            'store'   => 'emails.store',
+            'show'    => 'emails.show',
+            'edit'    => 'emails.edit',
+            'update'  => 'emails.update',
+            'destroy' => 'emails.destroy',
         ]);
     });
 

@@ -115,42 +115,91 @@ Turning data into actionable insights.
 
 ---
 
-### 7. Administration & Security
-The "Control Panel" of the CRM.
 
-*   **User Management**
-    *   **Roles & Profiles:** Defining who can see what (Sales Manager vs. Sales Rep).
-    *   **Permissions:** Read, Create, Edit, Delete access control.
-*   **Customization (Low Code)**
-    *   **Field Creator:** Adding custom data fields to any object.
-    *   **Page Layouts:** Dragging fields to arrange the user interface.
-    *   **Validation Rules:** Enforcing data quality (e.g., "Phone number must be in numeric format").
-*   **Automation Rules (Workflow)**
-    *   **Trigger-based:** If X happens, do Y.
-    *   *Example:* "When a lead status changes to 'Qualified', send a notification email to the Sales Manager."
-    *   **Task Creation:** Auto-create a follow-up task when a deal stage changes.
-*   **Data & Integrations**
-    *   **Import/Export:** Bulk data transfer via CSV.
-    *   **API Management:** REST or GraphQL APIs for third-party connections.
-    *   **Webhooks:** Real-time data pushing to other apps.
+### 7. Finance & Billing Management
+Once a deal is "Closed Won," the business needs to collect money. This module connects sales directly to revenue.
+*   **Invoicing**
+    *   **Quote-to-Invoice:** One-click conversion from an approved quote to a final invoice.
+    *   **Recurring Invoices:** Automated billing for subscription-based clients (monthly/annually).
+    *   **Tax & Discount Logic:** Regional tax rates, fixed vs. percentage discounts.
+*   **Payment Tracking**
+    *   **Payment Gateways:** Integration with Stripe, PayPal, or Razorpay to accept online payments.
+    *   **Partial Payments:** Tracking milestones (e.g., 50% upfront, 50% on completion).
+    *   **Receipt Generation:** Automated PDF receipts sent upon payment.
+*   **Expense Tracking**
+    *   **Deal Expenses:** Tracking travel, meals, or software costs associated with closing a specific opportunity to calculate true profit margins.
 
 ---
 
-### 8. Advanced / Modern Features (Differentiators)
-To make your CRM competitive in 2024 and beyond, consider adding these:
+### 8. Project & Delivery Management (Post-Sale)
+Sales reps close the deal, but the delivery team has to do the work. A lightweight project management module keeps everything inside the CRM.
+*   **Projects**
+    *   **Deal-to-Project Conversion:** Automatically create a project workspace when an Opportunity is won.
+    *   **Gantt/Kanban Views:** Visual project tracking for milestones and deadlines.
+*   **Time Tracking**
+    *   **Timesheets:** Employees log hours against specific projects or clients.
+    *   **Billable vs. Non-Billable:** Calculating how many logged hours can be invoiced to the client.
+*   **Resource Allocation**
+    *   **Workload View:** Seeing which team members are overbooked or have free capacity.
 
-*   **AI Assistance:** Predicting which leads are most likely to close (Predictive Scoring) or suggesting the best time to contact a lead.
-*   **Mobile App:** A native iOS/Android application for sales reps on the go (Offline mode support is crucial).
-*   **File Management:** Storing proposals, contracts, and presentations attached to records (Cloud storage integration like AWS S3 or Google Drive).
-*   **In-App Chat/Team Collaboration:** A chat feature for internal teams to discuss a deal without leaving the CRM page.
-*   **Multicurrency & Multi-language:** Essential if you plan to sell globally.
+---
 
-### Suggested Development Priority
-If you are building an MVP (Minimum Viable Product), start in this order:
-1.  **Core Data** (Leads, Contacts, Accounts)
-2.  **Sales** (Opportunities, Pipeline)
-3.  **Admin** (Basic User Management, Custom Fields)
-4.  **Activities** (Tasks, Notes)
-5.  **Basic Reporting**
+### 9. Document & Contract Management
+CRMs generate a lot of paperwork. A central hub for files ensures nothing gets lost.
+*   **E-Signatures**
+    *   **Digital Signing:** Built-in capability (or via API like DocuSign) to send contracts and track when the client views and signs them.
+*   **Document Generation**
+    *   **Dynamic Templates:** Upload a Word doc with variables (e.g., `{{Account.Name}}`) to auto-generate NDAs, proposals, and contracts.
+*   **File Repository**
+    *   **Cloud Storage:** S3 bucket integration to organize files by Account or Deal.
+    *   **Version Control:** Keeping track of contract revisions.
 
-The remaining modules (Marketing, Support, Advanced Analytics) can be added in later versions.
+---
+
+### 10. Automation & Workflow Engine
+This is what makes a CRM "smart." Instead of hardcoding logic, build a UI where admins can create their own rules.
+*   **Trigger-Based Actions (If This, Then That)**
+    *   *Example:* IF Lead Status = "Hot", THEN assign to "Senior Rep" AND send Email Alert.
+    *   *Example:* IF Ticket SLA is breached, THEN SMS the Support Manager.
+*   **Approval Processes**
+    *   **Discount Approvals:** If a sales rep offers > 20% discount on a quote, lock the quote until a Manager clicks "Approve."
+*   **Webhooks**
+    *   Allow your CRM to push real-time data to external apps (e.g., Slack, Discord, or an ERP) when specific events happen.
+
+---
+
+### 11. Customer Success & Retention
+It costs more to acquire a new customer than to keep an existing one. This module focuses on preventing churn.
+*   **Onboarding Pipelines**
+    *   Step-by-step checklists to ensure new clients are trained and set up properly.
+*   **Health Scoring**
+    *   Automated scoring (0-100) based on how often they log in, how many support tickets they file, and if they pay invoices on time.
+*   **Surveys & Feedback (NPS)**
+    *   **Net Promoter Score:** Automated emails asking "How likely are you to recommend us?" (1-10).
+    *   **CSAT:** Post-ticket resolution satisfaction surveys.
+
+---
+
+### 12. Inventory & Vendor Management (If applicable to your niche)
+If your target users sell physical goods, they will need basic supply chain features.
+*   **Purchase Orders (POs)**
+    *   Creating POs to order stock from suppliers/vendors.
+*   **Stock Tracking**
+    *   Auto-deducting product quantities when an Invoice is marked as "Paid."
+    *   Low stock alerts.
+*   **Vendor/Partner Portal**
+    *   A separate login area for external partners to register leads or check stock.
+
+---
+
+### 13. System Admin & Security (Crucial for Enterprise)
+Under the hood, larger teams need granular control over data.
+*   **Advanced Roles & Permissions (RBAC)**
+    *   *Spatie Laravel-Permission* is great for this.
+    *   **Record-level Security:** E.g., Sales Rep A can only see *their* leads, but the Sales Manager can see *everyone's* leads.
+*   **Audit Trails (Activity Logs)**
+    *   Tracking exactly *who* changed a field, *what* the old value was, *what* the new value is, and *when* it happened (useful for compliance).
+*   **Data Import / Export**
+    *   Robust CSV/Excel mapping tool to let users migrate from other CRMs easily.
+    *   Duplicate checking during import.
+

@@ -16,12 +16,16 @@ class ContactWebController extends Controller
     {
         $query = Contact::with(['accounts', 'tags', 'owner']);
 
-        if ($search = $request->get('search')) {
-            $query->where(function ($q) use ($search) {
-                $q->where('first_name', 'like', "%{$search}%")
-                  ->orWhere('last_name', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%");
-            });
+        $query->search($request->get('search'), ['first_name', 'last_name', 'email', 'phone', 'job_title']);
+        $query->filterOwner($request->get('owner_id'));
+        $query->filterDateRange($request->get('date_from'), $request->get('date_to'));
+
+        if ($accountId = $request->get('account_id')) {
+            $query->whereHas('accounts', fn ($q) => $q->where('accounts.id', $accountId));
+        }
+
+        if ($tag = $request->get('tag')) {
+            $query->whereHas('tags', fn ($q) => $q->where('name', 'like', "%{$tag}%"));
         }
 
         $contacts = $query->latest()->paginate(25)->withQueryString();
@@ -31,7 +35,10 @@ class ContactWebController extends Controller
             'thisMonth' => Contact::whereMonth('created_at', now()->month)->count(),
         ];
 
-        return view('contacts.index', compact('contacts', 'stats'));
+        $owners   = User::where('is_active', true)->orderBy('name')->get(['id', 'name']);
+        $accounts = Account::orderBy('name')->get(['id', 'name']);
+
+        return view('contacts.index', compact('contacts', 'stats', 'owners', 'accounts'));
     }
 
     public function create(): View

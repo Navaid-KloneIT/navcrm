@@ -22,6 +22,8 @@ use App\Http\Controllers\Api\EmailTemplateController;
 use App\Http\Controllers\Api\EmailCampaignController;
 use App\Http\Controllers\Api\LandingPageController;
 use App\Http\Controllers\Api\WebFormController;
+use App\Http\Controllers\Api\TicketController;
+use App\Http\Controllers\Api\KbArticleController;
 use App\Models\CampaignTargetList;
 use App\Models\WebFormSubmission;
 use Illuminate\Support\Facades\Route;
@@ -158,6 +160,18 @@ Route::name('api.')->middleware(['auth:sanctum', App\Http\Middleware\TenantScope
     Route::apiResource('web-forms', WebFormController::class);
     Route::get('/web-forms/{webForm}/submissions',            [WebFormController::class, 'submissions']);
     Route::post('/web-form-submissions/{submission}/convert', [WebFormController::class, 'convertSubmission']);
+
+    // =====================================================
+    // Customer Service & Support
+    // =====================================================
+
+    // Tickets
+    Route::apiResource('tickets', TicketController::class);
+    Route::get('/tickets/{ticket}/comments',        [TicketController::class, 'comments']);
+    Route::post('/tickets/{ticket}/comments',       [TicketController::class, 'addComment']);
+
+    // Knowledge Base
+    Route::apiResource('kb-articles', KbArticleController::class);
 
     // Admin routes
     Route::middleware(['role:admin'])->group(function () {

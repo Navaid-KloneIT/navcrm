@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\LeadScore;
 use App\Enums\LeadStatus;
 use App\Models\Concerns\BelongsToTenant;
+use App\Models\Concerns\Filterable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
@@ -14,7 +15,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Lead extends Model
 {
-    use BelongsToTenant, HasFactory, SoftDeletes;
+    use BelongsToTenant, Filterable, HasFactory, SoftDeletes;
 
     protected $fillable = [
         'tenant_id',

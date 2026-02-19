@@ -19,28 +19,51 @@ class OpportunityWebController extends Controller
 
         $query = Opportunity::with(['stage', 'account', 'contact', 'owner']);
 
-        if ($search = $request->get('search')) {
-            $query->where('name', 'like', "%{$search}%");
-        }
+        $query->search($request->get('search'), ['name']);
+        $query->filterOwner($request->get('owner_id'));
+        $query->filterDateRange($request->get('close_from'), $request->get('close_to'), 'close_date');
 
         if ($stage = $request->get('stage')) {
             $query->where('pipeline_stage_id', $stage);
         }
 
+        if ($accountId = $request->get('account_id')) {
+            $query->where('account_id', $accountId);
+        }
+
+        if ($amountMin = $request->get('amount_min')) {
+            $query->where('amount', '>=', $amountMin);
+        }
+
+        if ($amountMax = $request->get('amount_max')) {
+            $query->where('amount', '<=', $amountMax);
+        }
+
         $opportunities = $query->latest()->paginate(25)->withQueryString();
 
-        // For kanban view - group by stage
+        // Kanban: open deals grouped by stage (no filters, no pagination)
         $kanbanData = [];
-        foreach ($stages as $stage) {
-            $kanbanData[$stage->id] = Opportunity::with(['account', 'contact', 'owner'])
-                ->where('pipeline_stage_id', $stage->id)
+        foreach ($stages as $s) {
+            $kanbanData[$s->id] = Opportunity::with(['account', 'contact', 'owner'])
+                ->where('pipeline_stage_id', $s->id)
                 ->whereNull('won_at')
                 ->whereNull('lost_at')
                 ->latest()
                 ->get();
         }
 
-        return view('opportunities.index', compact('stages', 'opportunities', 'kanbanData'));
+        // Pipeline header KPIs
+        $pipelineStats = [
+            'total_value'  => (float) Opportunity::whereNull('won_at')->whereNull('lost_at')->sum('amount'),
+            'total_count'  => Opportunity::whereNull('won_at')->whereNull('lost_at')->count(),
+            'closing_month'=> (float) Opportunity::whereNull('won_at')->whereNull('lost_at')
+                ->whereMonth('close_date', now()->month)->whereYear('close_date', now()->year)->sum('amount'),
+        ];
+
+        $owners   = User::where('is_active', true)->orderBy('name')->get(['id', 'name']);
+        $accounts = Account::orderBy('name')->get(['id', 'name']);
+
+        return view('opportunities.index', compact('stages', 'opportunities', 'kanbanData', 'pipelineStats', 'owners', 'accounts'));
     }
 
     public function create(): View

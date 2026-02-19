@@ -325,6 +325,32 @@ Then open **http://localhost:8000** in your browser.
 - External `message_id` for deduplication with email clients
 - Polymorphic association to Contacts, Leads, and Accounts
 
+### Finance & Billing Management
+
+#### Invoicing
+- Full invoice lifecycle: Draft → Sent → Partial → Paid → Overdue → Cancelled / Void
+- **Quote-to-Invoice conversion** — create invoice pre-filled from any accepted quote
+- Invoice number generation in `INV-XXXXX` format (tenant-scoped)
+- Line item builder with live JS subtotal/tax/total calculation (mirrors quotes)
+- Tax rate support (configurable rates with country/region metadata)
+- Discount support: fixed amount or percentage
+- PDF download (dompdf) via `/finance/invoices/{id}/pdf`
+- Recurring invoices: store recurrence data (monthly/quarterly/yearly) + manual "Generate Next Invoice" button
+- Parent/child invoice chain for recurring billing history
+
+#### Payment Tracking (manual)
+- Record payments against invoices with method, reference number, and notes
+- Supported methods: Bank Transfer, Credit Card, Stripe, PayPal, Razorpay, Cash, Cheque
+- Automatic invoice status refresh after each payment: partial → Partial, fully paid → Paid
+- Payment amount aggregation: `amount_paid` auto-calculated from completed payments
+- Payments embedded in Invoice show page (inline record-payment form)
+
+#### Expense Tracking
+- Track business expenses linked to Opportunities or Accounts
+- Categories: Travel, Meals, Software, Entertainment, Accommodation, Other
+- Approval workflow: Pending → Approved / Rejected (with approver and timestamp)
+- Receipt URL storage for expense documentation
+
 ### Analytics & Reporting
 
 #### Analytics Dashboard
@@ -376,8 +402,13 @@ navcrm/
 │   │   ├── EmailCampaignStatus.php
 │   │   ├── EmailDirection.php           # inbound, outbound
 │   │   ├── EmailSource.php              # gmail, outlook, bcc_dropbox, manual
+│   │   ├── ExpenseCategory.php          # travel|meals|software|entertainment|accommodation|other
+│   │   ├── ExpenseStatus.php            # pending|approved|rejected
 │   │   ├── ForecastCategory.php
+│   │   ├── InvoiceStatus.php            # draft|sent|partial|paid|overdue|cancelled|void
 │   │   ├── LeadScore.php
+│   │   ├── PaymentMethod.php            # bank_transfer|credit_card|stripe|paypal|razorpay|cash|cheque
+│   │   ├── PaymentStatus.php            # pending|completed|failed|refunded
 │   │   ├── LeadStatus.php
 │   │   ├── OpportunitySource.php
 │   │   ├── QuoteStatus.php
@@ -402,7 +433,9 @@ navcrm/
 │   │   │   │   ├── EmailCampaignController.php
 │   │   │   │   ├── EmailLogController.php
 │   │   │   │   ├── EmailTemplateController.php
+│   │   │   │   ├── ExpenseController.php
 │   │   │   │   ├── ForecastController.php
+│   │   │   │   ├── InvoiceController.php
 │   │   │   │   ├── KbArticleController.php
 │   │   │   │   ├── LandingPageController.php
 │   │   │   │   ├── LeadController.php
@@ -432,7 +465,9 @@ navcrm/
 │   │   │   ├── EmailCampaignWebController.php
 │   │   │   ├── EmailLogWebController.php
 │   │   │   ├── EmailTemplateWebController.php
+│   │   │   ├── ExpenseWebController.php
 │   │   │   ├── ForecastWebController.php
+│   │   │   ├── InvoiceWebController.php
 │   │   │   ├── KbArticleWebController.php
 │   │   │   ├── LandingPageWebController.php
 │   │   │   ├── LeadWebController.php
@@ -482,6 +517,9 @@ navcrm/
 │   │   ├── DashboardWidget.php
 │   │   ├── EmailCampaign.php
 │   │   ├── EmailLog.php
+│   │   ├── Expense.php
+│   │   ├── Invoice.php
+│   │   ├── InvoiceLineItem.php
 │   │   ├── EmailTemplate.php
 │   │   ├── ForecastEntry.php
 │   │   ├── KbArticle.php
@@ -489,6 +527,7 @@ navcrm/
 │   │   ├── Lead.php
 │   │   ├── Note.php
 │   │   ├── Opportunity.php
+│   │   ├── Payment.php
 │   │   ├── PipelineStage.php
 │   │   ├── PriceBook.php
 │   │   ├── PriceBookEntry.php
@@ -498,6 +537,7 @@ navcrm/
 │   │   ├── SalesTarget.php
 │   │   ├── Tag.php
 │   │   ├── Task.php
+│   │   ├── TaxRate.php
 │   │   ├── Tenant.php
 │   │   ├── Ticket.php
 │   │   ├── TicketComment.php
@@ -508,6 +548,8 @@ navcrm/
 │   └── Services/
 │       ├── AnalyticsService.php             # KPI data, chart datasets, report data for all 4 analytics reports
 │       ├── ForecastService.php
+│       ├── InvoicePdfService.php            # dompdf PDF generation for invoices
+│       ├── InvoiceService.php               # Invoice number generation, quote conversion, totals, payment status refresh, recurring
 │       ├── LeadConversionService.php
 │       ├── QuoteCalculationService.php
 │       └── QuotePdfService.php
@@ -521,7 +563,8 @@ navcrm/
 │       ├── DemoDataSeeder.php               # Core + SFA demo data
 │       ├── MarketingDemoSeeder.php          # Marketing Automation demo data
 │       ├── SupportDemoSeeder.php            # Customer Service & Support demo data
-│       └── ActivityDemoSeeder.php           # Activity & Communication demo data
+│       ├── ActivityDemoSeeder.php           # Activity & Communication demo data
+│       └── FinanceDemoSeeder.php            # Finance & Billing demo data (tax rates, invoices, payments, expenses)
 │
 ├── resources/
 │   ├── css/
@@ -574,6 +617,16 @@ navcrm/
 │       │   ├── create.blade.php             # Shared create/edit form
 │       │   ├── show.blade.php
 │       │   └── pdf.blade.php                # PDF template for dompdf
+│       ├── finance/
+│       │   ├── invoices/
+│       │   │   ├── index.blade.php          # Status chip filters, table with Amount Due column + PDF button
+│       │   │   ├── create.blade.php         # Line item builder, tax rate, recurring toggle, quote conversion banner
+│       │   │   ├── show.blade.php           # Invoice preview, inline payment recording, recurring schedule card
+│       │   │   └── pdf.blade.php            # dompdf PDF template
+│       │   └── expenses/
+│       │       ├── index.blade.php          # Status chips, filter bar, approve inline action
+│       │       ├── create.blade.php         # Category / amount / date / linked opportunity form
+│       │       └── show.blade.php           # Detail view with Approve / Reject action buttons
 │       ├── forecasts/
 │       │   └── index.blade.php
 │       ├── marketing/
@@ -701,6 +754,18 @@ GET|PUT|DELETE    /activity/calls/{id}            → show / edit / update / del
 GET|POST          /activity/emails                → list / create
 GET|PUT|DELETE    /activity/emails/{id}           → show / edit / update / delete
 
+GET|POST          /finance/invoices                   → list / create
+GET|PUT|DELETE    /finance/invoices/{id}             → show / edit / update / delete
+GET               /finance/invoices/{id}/pdf         → download PDF
+POST              /finance/invoices/{id}/payments    → record payment
+DELETE            /finance/invoices/{id}/payments/{pid} → delete payment
+POST              /finance/invoices/{id}/recurring   → generate next recurring invoice
+
+GET|POST          /finance/expenses                  → list / create
+GET|PUT|DELETE    /finance/expenses/{id}             → show / edit / update / delete
+POST              /finance/expenses/{id}/approve     → approve expense
+POST              /finance/expenses/{id}/reject      → reject expense
+
 GET               /analytics                          → analytics dashboard
 POST              /analytics/dashboard/layout         → save widget layout (AJAX)
 POST              /analytics/dashboard/widget/toggle  → toggle widget visibility (AJAX)
@@ -771,6 +836,13 @@ PUT     /api/profile/password
 /api/call-logs       (CRUD)
 /api/email-logs      (CRUD)
 
+# Finance & Billing (protected)
+/api/invoices                         (CRUD)
+PATCH /api/invoices/{id}/status       (update status)
+/api/expenses                         (CRUD)
+POST  /api/expenses/{id}/approve      (approve expense)
+POST  /api/expenses/{id}/reject       (reject expense)
+
 # Admin only (role:admin required)
 /api/users           (CRUD + sync-roles)
 /api/roles           (CRUD)
@@ -813,6 +885,11 @@ PUT     /api/profile/password
 | CallLog | call_logs | morphTo loggable (Contact/Lead/Account), belongsTo User |
 | EmailLog | email_logs | morphTo emailable (Contact/Lead/Account), belongsTo User |
 | DashboardWidget | dashboard_widgets | belongsTo User; unique(user_id, widget_type); stores widget order + visibility |
+| TaxRate | tax_rates | belongsTo Tenant; is_default flag |
+| Invoice | invoices | belongsTo Quote/Opportunity/Account/Contact/owner/createdBy/parentInvoice; hasMany LineItems/Payments/childInvoices |
+| InvoiceLineItem | invoice_line_items | belongsTo Invoice/Product |
+| Payment | payments | belongsTo Invoice/createdBy |
+| Expense | expenses | belongsTo Opportunity/Account/user/approvedBy/createdBy |
 
 ---
 

@@ -14,21 +14,32 @@ class AccountWebController extends Controller
     {
         $query = Account::with(['owner', 'parent']);
 
-        if ($search = $request->get('search')) {
-            $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('industry', 'like', "%{$search}%")
-                  ->orWhere('website', 'like', "%{$search}%");
-            });
-        }
+        $query->search($request->get('search'), ['name', 'industry', 'website', 'phone', 'email']);
+        $query->filterOwner($request->get('owner_id'));
+        $query->filterDateRange($request->get('date_from'), $request->get('date_to'));
 
         if ($industry = $request->get('industry')) {
             $query->where('industry', $industry);
         }
 
-        $accounts = $query->latest()->paginate(25)->withQueryString();
+        if ($size = $request->get('size')) {
+            $sizeRanges = [
+                '1-50'     => [1,    50],
+                '51-200'   => [51,   200],
+                '201-1000' => [201,  1000],
+                '1001+'    => [1001, PHP_INT_MAX],
+            ];
+            if (isset($sizeRanges[$size])) {
+                [$min, $max] = $sizeRanges[$size];
+                $query->where('employee_count', '>=', $min)->where('employee_count', '<=', $max);
+            }
+        }
 
-        return view('accounts.index', compact('accounts'));
+        $accounts   = $query->latest()->paginate(25)->withQueryString();
+        $owners     = User::where('is_active', true)->orderBy('name')->get(['id', 'name']);
+        $industries = Account::distinct()->whereNotNull('industry')->orderBy('industry')->pluck('industry');
+
+        return view('accounts.index', compact('accounts', 'owners', 'industries'));
     }
 
     public function create(): View

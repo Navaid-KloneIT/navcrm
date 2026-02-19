@@ -27,6 +27,8 @@ use App\Http\Controllers\CallLogWebController;
 use App\Http\Controllers\EmailLogWebController;
 use App\Http\Controllers\AnalyticsDashboardWebController;
 use App\Http\Controllers\AnalyticsReportWebController;
+use App\Http\Controllers\InvoiceWebController;
+use App\Http\Controllers\ExpenseWebController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -323,6 +325,44 @@ Route::middleware(['auth'])->group(function () {
             [AnalyticsReportWebController::class, 'funnelAnalysis'])->name('reports.funnel');
         Route::get('/reports/service',
             [AnalyticsReportWebController::class, 'serviceReport'])->name('reports.service');
+    });
+
+    // ── Finance & Billing ─────────────────────────────────────────────────
+    Route::prefix('finance')->name('finance.')->group(function () {
+
+        // Invoices
+        Route::resource('invoices', InvoiceWebController::class)->names([
+            'index'   => 'invoices.index',
+            'create'  => 'invoices.create',
+            'store'   => 'invoices.store',
+            'show'    => 'invoices.show',
+            'edit'    => 'invoices.edit',
+            'update'  => 'invoices.update',
+            'destroy' => 'invoices.destroy',
+        ]);
+        Route::get('/invoices/{invoice}/pdf',
+            [InvoiceWebController::class, 'pdf'])->name('invoices.pdf');
+        Route::post('/invoices/{invoice}/payments',
+            [InvoiceWebController::class, 'storePayment'])->name('invoices.payments.store');
+        Route::delete('/invoices/{invoice}/payments/{payment}',
+            [InvoiceWebController::class, 'destroyPayment'])->name('invoices.payments.destroy');
+        Route::post('/invoices/{invoice}/recurring',
+            [InvoiceWebController::class, 'generateRecurring'])->name('invoices.recurring');
+
+        // Expenses
+        Route::resource('expenses', ExpenseWebController::class)->names([
+            'index'   => 'expenses.index',
+            'create'  => 'expenses.create',
+            'store'   => 'expenses.store',
+            'show'    => 'expenses.show',
+            'edit'    => 'expenses.edit',
+            'update'  => 'expenses.update',
+            'destroy' => 'expenses.destroy',
+        ]);
+        Route::post('/expenses/{expense}/approve',
+            [ExpenseWebController::class, 'approve'])->name('expenses.approve');
+        Route::post('/expenses/{expense}/reject',
+            [ExpenseWebController::class, 'reject'])->name('expenses.reject');
     });
 
     // ── Settings ──────────────────────────────────────────────────────────

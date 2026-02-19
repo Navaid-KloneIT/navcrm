@@ -14,16 +14,12 @@ class LeadWebController extends Controller
 {
     public function index(Request $request): View
     {
-        $query = Lead::with(['tags', 'owner']);
+        $searchCols = ['first_name', 'last_name', 'email', 'company_name'];
 
-        if ($search = $request->get('search')) {
-            $query->where(function ($q) use ($search) {
-                $q->where('first_name', 'like', "%{$search}%")
-                  ->orWhere('last_name', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%")
-                  ->orWhere('company_name', 'like', "%{$search}%");
-            });
-        }
+        $query = Lead::with(['tags', 'owner']);
+        $query->search($request->get('search'), $searchCols);
+        $query->filterOwner($request->get('owner_id'));
+        $query->filterDateRange($request->get('date_from'), $request->get('date_to'));
 
         if ($status = $request->get('status')) {
             $query->where('status', $status);
@@ -33,13 +29,36 @@ class LeadWebController extends Controller
             $query->where('score', $score);
         }
 
+        if ($source = $request->get('source')) {
+            $query->where('source', $source);
+        }
+
+        if ($tag = $request->get('tag')) {
+            $query->whereHas('tags', fn ($q) => $q->where('name', 'like', "%{$tag}%"));
+        }
+
         $leads = $query->latest()->paginate(25)->withQueryString();
+
+        // Kanban: same filters without pagination, grouped by status
+        $kanbanQuery = Lead::with('owner');
+        $kanbanQuery->search($request->get('search'), $searchCols);
+        $kanbanQuery->filterOwner($request->get('owner_id'));
+        $kanbanQuery->filterDateRange($request->get('date_from'), $request->get('date_to'));
+        if ($status = $request->get('status')) $kanbanQuery->where('status', $status);
+        if ($score  = $request->get('score'))  $kanbanQuery->where('score', $score);
+        if ($source = $request->get('source')) $kanbanQuery->where('source', $source);
+        if ($tag    = $request->get('tag'))    $kanbanQuery->whereHas('tags', fn ($q) => $q->where('name', 'like', "%{$tag}%"));
+
+        $kanbanLeads = $kanbanQuery->latest()->get()->groupBy(fn ($l) => $l->status->value);
 
         $statusCounts = Lead::selectRaw('status, count(*) as count')
             ->groupBy('status')
             ->pluck('count', 'status');
 
-        return view('leads.index', compact('leads', 'statusCounts'));
+        $owners  = User::where('is_active', true)->orderBy('name')->get(['id', 'name']);
+        $sources = Lead::distinct()->whereNotNull('source')->orderBy('source')->pluck('source');
+
+        return view('leads.index', compact('leads', 'statusCounts', 'kanbanLeads', 'owners', 'sources'));
     }
 
     public function create(): View

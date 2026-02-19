@@ -17,6 +17,7 @@ class DatabaseSeeder extends Seeder
             MarketingDemoSeeder::class,
             SupportDemoSeeder::class,
             ActivityDemoSeeder::class,
+            FinanceDemoSeeder::class,
         ]);
     }
 }

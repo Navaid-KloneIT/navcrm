@@ -75,7 +75,7 @@
           @endforeach
         </select>
       </div>
-      <div class="col-6 col-md-3">
+      <div class="col-6 col-md-2">
         <label class="form-label form-label-sm">Assigned To</label>
         <select name="assigned_to" class="form-select form-select-sm">
           <option value="">All Agents</option>
@@ -84,9 +84,35 @@
           @endforeach
         </select>
       </div>
-      <div class="col-6 col-md-1 d-flex gap-2">
+      <div class="col-6 col-md-2">
+        <label class="form-label form-label-sm">Channel</label>
+        <select name="channel" class="form-select form-select-sm">
+          <option value="">All Channels</option>
+          @foreach(\App\Enums\TicketChannel::cases() as $c)
+            <option value="{{ $c->value }}" {{ request('channel') === $c->value ? 'selected' : '' }}>{{ $c->label() }}</option>
+          @endforeach
+        </select>
+      </div>
+      <div class="col-6 col-md-2">
+        <label class="form-label form-label-sm">Account</label>
+        <select name="account_id" class="form-select form-select-sm">
+          <option value="">All Accounts</option>
+          @foreach($accounts as $acc)
+            <option value="{{ $acc->id }}" {{ request('account_id') == $acc->id ? 'selected' : '' }}>{{ $acc->name }}</option>
+          @endforeach
+        </select>
+      </div>
+      <div class="col-6 col-md-2">
+        <label class="form-label form-label-sm">From</label>
+        <input type="date" name="date_from" class="form-control form-control-sm" value="{{ request('date_from') }}">
+      </div>
+      <div class="col-6 col-md-2">
+        <label class="form-label form-label-sm">To</label>
+        <input type="date" name="date_to" class="form-control form-control-sm" value="{{ request('date_to') }}">
+      </div>
+      <div class="col-6 col-md-1 d-flex gap-2 align-self-end">
         <button type="submit" class="btn btn-primary btn-sm flex-fill">Filter</button>
-        <a href="{{ route('support.tickets.index') }}" class="btn btn-outline-secondary btn-sm">✕</a>
+        <a href="{{ route('support.tickets.index') }}" class="btn btn-outline-secondary btn-sm" title="Clear filters">✕</a>
       </div>
     </form>
   </div>

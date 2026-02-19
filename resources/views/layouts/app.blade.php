@@ -219,6 +219,30 @@
         </a>
       </div>
 
+      {{-- Support --}}
+      <div class="ncv-nav-section">
+        <div class="ncv-nav-label">Support</div>
+
+        <a href="{{ route('support.tickets.index') }}"
+           class="ncv-nav-item {{ request()->routeIs('support.tickets.*') ? 'active' : '' }}"
+           data-tooltip="Tickets">
+          <svg class="ncv-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2z"/>
+          </svg>
+          <span class="ncv-nav-text">Tickets</span>
+        </a>
+
+        <a href="{{ route('support.kb-articles.index') }}"
+           class="ncv-nav-item {{ request()->routeIs('support.kb-articles.*') ? 'active' : '' }}"
+           data-tooltip="Knowledge Base">
+          <svg class="ncv-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+          </svg>
+          <span class="ncv-nav-text">Knowledge Base</span>
+        </a>
+      </div>
+
       {{-- Admin (conditional) --}}
       @if(auth()->user()?->hasRole('admin'))
       <div class="ncv-nav-section">

@@ -17,6 +17,10 @@ use App\Http\Controllers\EmailTemplateWebController;
 use App\Http\Controllers\EmailCampaignWebController;
 use App\Http\Controllers\LandingPageWebController;
 use App\Http\Controllers\WebFormWebController;
+use App\Http\Controllers\TicketWebController;
+use App\Http\Controllers\KbArticleWebController;
+use App\Http\Controllers\PortalController;
+use App\Http\Controllers\PortalTicketController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -30,6 +34,29 @@ Route::get('/', function () {
     return auth()->check()
         ? redirect()->route('dashboard')
         : redirect()->route('auth.login');
+});
+
+// ─── Customer Self-Service Portal ──────────────────────────────────────────
+Route::prefix('portal')->name('portal.')->group(function () {
+
+    // Guest portal routes
+    Route::middleware('guest:web')->group(function () {
+        Route::get('/login',  [PortalController::class, 'showLogin'])->name('login');
+        Route::post('/login', [PortalController::class, 'login'])->name('login.submit');
+    });
+
+    Route::post('/logout', [PortalController::class, 'logout'])->name('logout');
+
+    // Authenticated portal routes
+    Route::middleware(App\Http\Middleware\PortalAuth::class)->group(function () {
+        Route::get('/', [PortalController::class, 'dashboard'])->name('dashboard');
+
+        Route::get('/tickets',                                    [PortalTicketController::class, 'index'])->name('tickets.index');
+        Route::get('/tickets/create',                             [PortalTicketController::class, 'create'])->name('tickets.create');
+        Route::post('/tickets',                                   [PortalTicketController::class, 'store'])->name('tickets.store');
+        Route::get('/tickets/{ticket}',                           [PortalTicketController::class, 'show'])->name('tickets.show');
+        Route::post('/tickets/{ticket}/comment',                  [PortalTicketController::class, 'addComment'])->name('tickets.comment');
+    });
 });
 
 // ─── Guest Routes ──────────────────────────────────────────────────────────
@@ -196,6 +223,34 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/web-forms/submissions/{submission}/convert',
             [WebFormWebController::class, 'convertSubmission']
         )->name('web-forms.submissions.convert');
+    });
+
+    // ── Customer Service & Support ─────────────────────────────────────────
+    Route::prefix('support')->name('support.')->group(function () {
+
+        // Tickets
+        Route::resource('tickets', TicketWebController::class)->names([
+            'index'   => 'tickets.index',
+            'create'  => 'tickets.create',
+            'store'   => 'tickets.store',
+            'show'    => 'tickets.show',
+            'edit'    => 'tickets.edit',
+            'update'  => 'tickets.update',
+            'destroy' => 'tickets.destroy',
+        ]);
+        Route::post('/tickets/{ticket}/comment', [TicketWebController::class, 'addComment'])->name('tickets.comment');
+        Route::post('/tickets/{ticket}/status',  [TicketWebController::class, 'updateStatus'])->name('tickets.status');
+
+        // Knowledge Base
+        Route::resource('kb-articles', KbArticleWebController::class)->names([
+            'index'   => 'kb-articles.index',
+            'create'  => 'kb-articles.create',
+            'store'   => 'kb-articles.store',
+            'show'    => 'kb-articles.show',
+            'edit'    => 'kb-articles.edit',
+            'update'  => 'kb-articles.update',
+            'destroy' => 'kb-articles.destroy',
+        ]);
     });
 
     // ── Settings ──────────────────────────────────────────────────────────

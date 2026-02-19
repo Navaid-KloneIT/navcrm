@@ -2,7 +2,10 @@
 
 namespace App\Models;
 
+use App\Enums\CalendarEventStatus;
+use App\Enums\CalendarEventType;
 use App\Models\Concerns\BelongsToTenant;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
@@ -10,34 +13,35 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class CalendarEvent extends Model
 {
-    use BelongsToTenant, SoftDeletes;
+    use BelongsToTenant, HasFactory, SoftDeletes;
 
     protected $fillable = [
         'tenant_id',
         'title',
         'description',
-        'start_at',
-        'end_at',
-        'all_day',
+        'event_type',
+        'status',
+        'starts_at',
+        'ends_at',
+        'is_all_day',
         'location',
         'meeting_link',
-        'type',
-        'status',
+        'invite_url',
         'external_calendar_id',
         'external_calendar_source',
-        'invite_url',
         'eventable_type',
         'eventable_id',
         'organizer_id',
-        'created_by',
     ];
 
     protected function casts(): array
     {
         return [
-            'start_at' => 'datetime',
-            'end_at'   => 'datetime',
-            'all_day'  => 'boolean',
+            'starts_at'  => 'datetime',
+            'ends_at'    => 'datetime',
+            'is_all_day' => 'boolean',
+            'event_type' => CalendarEventType::class,
+            'status'     => CalendarEventStatus::class,
         ];
     }
 
@@ -51,8 +55,8 @@ class CalendarEvent extends Model
         return $this->belongsTo(User::class, 'organizer_id');
     }
 
-    public function creator(): BelongsTo
+    public function getDurationMinutesAttribute(): int
     {
-        return $this->belongsTo(User::class, 'created_by');
+        return (int) $this->starts_at->diffInMinutes($this->ends_at);
     }
 }

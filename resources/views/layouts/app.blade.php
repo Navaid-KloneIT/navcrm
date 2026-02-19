@@ -289,6 +289,58 @@
         </a>
       </div>
 
+      {{-- Analytics --}}
+      <div class="ncv-nav-section">
+        <div class="ncv-nav-label">Analytics</div>
+
+        <a href="{{ route('analytics.dashboard') }}"
+           class="ncv-nav-item {{ request()->routeIs('analytics.dashboard') ? 'active' : '' }}"
+           data-tooltip="Analytics Dashboard">
+          <svg class="ncv-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="12" width="4" height="9" rx="1"/>
+            <rect x="10" y="7" width="4" height="14" rx="1"/>
+            <rect x="17" y="3" width="4" height="18" rx="1"/>
+          </svg>
+          <span class="ncv-nav-text">Analytics Dashboard</span>
+        </a>
+
+        <a href="{{ route('analytics.reports.sales-activity') }}"
+           class="ncv-nav-item {{ request()->routeIs('analytics.reports.sales-activity') ? 'active' : '' }}"
+           data-tooltip="Sales Activity">
+          <svg class="ncv-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13 19.79 19.79 0 0 1 1.61 4.38 2 2 0 0 1 3.58 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.18 6.18l1.27-.82a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
+          </svg>
+          <span class="ncv-nav-text">Sales Activity</span>
+        </a>
+
+        <a href="{{ route('analytics.reports.sales-performance') }}"
+           class="ncv-nav-item {{ request()->routeIs('analytics.reports.sales-performance') ? 'active' : '' }}"
+           data-tooltip="Sales Performance">
+          <svg class="ncv-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+          </svg>
+          <span class="ncv-nav-text">Sales Performance</span>
+        </a>
+
+        <a href="{{ route('analytics.reports.funnel') }}"
+           class="ncv-nav-item {{ request()->routeIs('analytics.reports.funnel') ? 'active' : '' }}"
+           data-tooltip="Funnel Analysis">
+          <svg class="ncv-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 3H2l8 9.46V19l4 2V12.46L22 3z"/>
+          </svg>
+          <span class="ncv-nav-text">Funnel Analysis</span>
+        </a>
+
+        <a href="{{ route('analytics.reports.service') }}"
+           class="ncv-nav-item {{ request()->routeIs('analytics.reports.service') ? 'active' : '' }}"
+           data-tooltip="Service Reports">
+          <svg class="ncv-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+          </svg>
+          <span class="ncv-nav-text">Service Reports</span>
+        </a>
+      </div>
+
       {{-- Admin (conditional) --}}
       @if(auth()->user()?->hasRole('admin'))
       <div class="ncv-nav-section">

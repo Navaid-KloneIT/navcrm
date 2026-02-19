@@ -6,6 +6,7 @@ use App\Models\Concerns\BelongsToTenant;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -37,6 +38,16 @@ class Contact extends Model
         'source',
         'owner_id',
         'created_by',
+        'portal_password',
+        'portal_active',
+    ];
+
+    protected $hidden = [
+        'portal_password',
+    ];
+
+    protected $casts = [
+        'portal_active' => 'boolean',
     ];
 
     public function getFullNameAttribute(): string
@@ -88,5 +99,10 @@ class Contact extends Model
         return $this->belongsToMany(self::class, 'contact_relationships', 'related_contact_id', 'contact_id')
             ->withPivot('relationship_type')
             ->withTimestamps();
+    }
+
+    public function tickets(): HasMany
+    {
+        return $this->hasMany(Ticket::class);
     }
 }

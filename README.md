@@ -21,6 +21,86 @@ A **multi-tenant CRM** (Customer Relationship Management) application built with
 
 ## Quick Start
 
+### Option A — XAMPP (Recommended for local development)
+
+> **Prerequisites:** XAMPP is installed and the project is already inside `htdocs\navcrm`.
+> Start **Apache** and **MySQL** in the XAMPP Control Panel before proceeding.
+
+```bash
+# 1. Install PHP dependencies (use the XAMPP PHP binary or the one on your PATH)
+php composer.phar install
+# or if composer is globally available:
+composer install
+
+# 2. Install Node dependencies and build assets
+npm install && npm run build
+
+# 3. Configure environment
+cp .env.example .env
+php artisan key:generate
+```
+
+Edit `.env` and set the database to match XAMPP MySQL defaults:
+
+```dotenv
+APP_URL=http://localhost/navcrm/public
+
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=navcrm
+DB_USERNAME=root
+DB_PASSWORD=
+```
+
+> Create the `navcrm` database in phpMyAdmin (`http://localhost/phpmyadmin`) first.
+
+```bash
+# 4. Run migrations and seed (all demo data included)
+php artisan migrate
+php artisan db:seed
+
+# 5. Create storage symlink
+php artisan storage:link
+```
+
+Then open **http://localhost/navcrm/public** in your browser.
+
+#### Optional: Virtual Host (clean URL without `/public`)
+
+1. Edit `C:\xampp8\apache\conf\extra\httpd-vhosts.conf` and append:
+
+```apache
+<VirtualHost *:80>
+    ServerName navcrm.test
+    DocumentRoot "C:/xampp8/htdocs/navcrm/public"
+    <Directory "C:/xampp8/htdocs/navcrm/public">
+        AllowOverride All
+        Require all granted
+    </Directory>
+</VirtualHost>
+```
+
+2. Add to `C:\Windows\System32\drivers\etc\hosts` (run as Administrator):
+
+```
+127.0.0.1  navcrm.test
+```
+
+3. Restart Apache in XAMPP Control Panel.
+
+4. Update `.env`:
+
+```dotenv
+APP_URL=http://navcrm.test
+```
+
+Then open **http://navcrm.test** in your browser.
+
+---
+
+### Option B — PHP built-in server (`php artisan serve`)
+
 ```bash
 # 1. Install PHP dependencies
 composer install
@@ -39,6 +119,8 @@ php artisan db:seed
 # 5. Start development server
 php artisan serve
 ```
+
+Then open **http://localhost:8000** in your browser.
 
 ---
 

@@ -32,12 +32,9 @@ npm install && npm run build
 cp .env.example .env
 php artisan key:generate
 
-# 4. Run migrations and seed
+# 4. Run migrations and seed (all demo data included)
 php artisan migrate
 php artisan db:seed
-php artisan db:seed --class=MarketingDemoSeeder
-php artisan db:seed --class=SupportDemoSeeder
-php artisan db:seed --class=ActivityDemoSeeder
 
 # 5. Start development server
 php artisan serve
@@ -273,14 +270,26 @@ navcrm/
 │   ├── Enums/
 │   │   ├── ActivityType.php
 │   │   ├── AddressType.php
+│   │   ├── CalendarEventStatus.php      # scheduled, completed, cancelled, no_show
+│   │   ├── CalendarEventType.php        # meeting, call, demo, follow_up, webinar, other
+│   │   ├── CallDirection.php            # inbound, outbound
+│   │   ├── CallStatus.php               # completed, no_answer, busy, voicemail, failed
 │   │   ├── CampaignStatus.php           # draft, active, paused, completed
 │   │   ├── CampaignType.php             # email, webinar, event, digital_ads, direct_mail
 │   │   ├── EmailCampaignStatus.php
+│   │   ├── EmailDirection.php           # inbound, outbound
+│   │   ├── EmailSource.php              # gmail, outlook, bcc_dropbox, manual
 │   │   ├── ForecastCategory.php
 │   │   ├── LeadScore.php
 │   │   ├── LeadStatus.php
 │   │   ├── OpportunitySource.php
-│   │   └── QuoteStatus.php
+│   │   ├── QuoteStatus.php
+│   │   ├── TaskPriority.php             # low, medium, high, urgent
+│   │   ├── TaskRecurrence.php           # daily, weekly, monthly, quarterly, yearly
+│   │   ├── TaskStatus.php               # pending, in_progress, completed, cancelled
+│   │   ├── TicketChannel.php            # email, portal, phone, manual
+│   │   ├── TicketPriority.php           # low, medium, high, critical
+│   │   └── TicketStatus.php             # open, in_progress, escalated, resolved, closed
 │   │
 │   ├── Http/
 │   │   ├── Controllers/
@@ -289,11 +298,15 @@ navcrm/
 │   │   │   │   ├── ActivityController.php
 │   │   │   │   ├── AddressController.php
 │   │   │   │   ├── AuthController.php
+│   │   │   │   ├── CalendarEventController.php
+│   │   │   │   ├── CallLogController.php
 │   │   │   │   ├── CampaignController.php
 │   │   │   │   ├── ContactController.php
 │   │   │   │   ├── EmailCampaignController.php
+│   │   │   │   ├── EmailLogController.php
 │   │   │   │   ├── EmailTemplateController.php
 │   │   │   │   ├── ForecastController.php
+│   │   │   │   ├── KbArticleController.php
 │   │   │   │   ├── LandingPageController.php
 │   │   │   │   ├── LeadController.php
 │   │   │   │   ├── NoteController.php
@@ -305,17 +318,23 @@ navcrm/
 │   │   │   │   ├── RolePermissionController.php
 │   │   │   │   ├── SalesTargetController.php
 │   │   │   │   ├── TagController.php
+│   │   │   │   ├── TaskController.php
+│   │   │   │   ├── TicketController.php
 │   │   │   │   ├── UserController.php
 │   │   │   │   └── WebFormController.php
 │   │   │   │
 │   │   │   ├── AccountWebController.php     # Web Blade controllers (session auth)
 │   │   │   ├── ActivityWebController.php
+│   │   │   ├── CalendarEventWebController.php
+│   │   │   ├── CallLogWebController.php
 │   │   │   ├── CampaignWebController.php
 │   │   │   ├── ContactWebController.php
 │   │   │   ├── DashboardController.php
 │   │   │   ├── EmailCampaignWebController.php
+│   │   │   ├── EmailLogWebController.php
 │   │   │   ├── EmailTemplateWebController.php
 │   │   │   ├── ForecastWebController.php
+│   │   │   ├── KbArticleWebController.php
 │   │   │   ├── LandingPageWebController.php
 │   │   │   ├── LeadWebController.php
 │   │   │   ├── OpportunityWebController.php
@@ -323,6 +342,8 @@ navcrm/
 │   │   │   ├── ProductWebController.php
 │   │   │   ├── QuoteWebController.php
 │   │   │   ├── SettingsController.php
+│   │   │   ├── TaskWebController.php
+│   │   │   ├── TicketWebController.php
 │   │   │   ├── WebAuthController.php
 │   │   │   └── WebFormWebController.php
 │   │   │
@@ -332,23 +353,24 @@ navcrm/
 │   │   ├── Requests/                        # Form validation request classes
 │   │   │   ├── Account/
 │   │   │   ├── Auth/
+│   │   │   ├── CalendarEvent/
+│   │   │   ├── CallLog/
 │   │   │   ├── Contact/
+│   │   │   ├── EmailLog/
 │   │   │   ├── ForecastEntry/
 │   │   │   ├── Lead/
 │   │   │   ├── Opportunity/
 │   │   │   ├── PriceBook/
 │   │   │   ├── Product/
 │   │   │   ├── Quote/
-│   │   │   └── SalesTarget/
+│   │   │   ├── SalesTarget/
+│   │   │   └── Task/
 │   │   │
 │   │   └── Resources/                       # API resource transformers
 │   │
 │   ├── Models/
 │   │   ├── Concerns/
 │   │   │   └── BelongsToTenant.php          # Global scope + auto tenant_id
-│   │   ├── Account.php
-│   │   ├── Activity.php
-│   │   ├── Address.php
 │   │   ├── Account.php
 │   │   ├── Activity.php
 │   │   ├── Address.php
@@ -466,6 +488,23 @@ navcrm/
 │       │       ├── create.blade.php         # Dynamic field builder
 │       │       ├── show.blade.php           # Live preview + submissions list
 │       │       └── _field.blade.php         # Reusable drag-and-drop field row
+│       ├── activity/
+│       │   ├── tasks/
+│       │   │   ├── index.blade.php
+│       │   │   ├── create.blade.php         # Shared create/edit form
+│       │   │   └── show.blade.php
+│       │   ├── calendar/
+│       │   │   ├── index.blade.php
+│       │   │   ├── create.blade.php         # Shared create/edit form
+│       │   │   └── show.blade.php
+│       │   ├── calls/
+│       │   │   ├── index.blade.php
+│       │   │   ├── create.blade.php         # Shared create/edit form
+│       │   │   └── show.blade.php
+│       │   └── emails/
+│       │       ├── index.blade.php
+│       │       ├── create.blade.php         # Shared create/edit form
+│       │       └── show.blade.php
 │       ├── settings/
 │       │   ├── index.blade.php
 │       │   ├── profile.blade.php
@@ -544,6 +583,15 @@ GET|POST          /portal/tickets/create          → submit ticket (portal)
 GET               /portal/tickets/{id}            → view ticket (portal)
 POST              /portal/tickets/{id}/comment    → reply to ticket (portal)
 
+GET|POST          /activity/tasks                 → list / create
+GET|PUT|DELETE    /activity/tasks/{id}            → show / edit / update / delete
+GET|POST          /activity/calendar              → list / create
+GET|PUT|DELETE    /activity/calendar/{id}         → show / edit / update / delete
+GET|POST          /activity/calls                 → list / create
+GET|PUT|DELETE    /activity/calls/{id}            → show / edit / update / delete
+GET|POST          /activity/emails                → list / create
+GET|PUT|DELETE    /activity/emails/{id}           → show / edit / update / delete
+
 GET               /settings          → settings home
 GET|PUT           /settings/profile  → profile
 PUT               /settings/password → change password
@@ -595,6 +643,16 @@ PUT     /api/profile/password
 /api/landing-pages                                    (CRUD)
 /api/web-forms                                        (CRUD + submissions list)
 /api/web-form-submissions/{id}/convert                (convert submission to lead/contact)
+
+# Customer Service & Support (protected)
+/api/tickets         (CRUD + comments, status update)
+/api/kb-articles     (CRUD)
+
+# Activity & Communication Management (protected)
+/api/tasks           (CRUD)
+/api/calendar-events (CRUD)
+/api/call-logs       (CRUD)
+/api/email-logs      (CRUD)
 
 # Admin only (role:admin required)
 /api/users           (CRUD + sync-roles)

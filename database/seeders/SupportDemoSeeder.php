@@ -14,6 +14,7 @@ use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class SupportDemoSeeder extends Seeder
 {
@@ -302,6 +303,7 @@ MD,
             KbArticle::create([
                 'tenant_id'    => $tenant->id,
                 'title'        => $data['title'],
+                'slug'         => Str::slug($data['title']) . '-' . Str::random(4),
                 'category'     => $data['category'],
                 'body'         => trim($data['body']),
                 'is_public'    => $data['is_public'],

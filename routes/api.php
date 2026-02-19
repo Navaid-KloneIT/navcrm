@@ -24,6 +24,10 @@ use App\Http\Controllers\Api\LandingPageController;
 use App\Http\Controllers\Api\WebFormController;
 use App\Http\Controllers\Api\TicketController;
 use App\Http\Controllers\Api\KbArticleController;
+use App\Http\Controllers\Api\TaskController;
+use App\Http\Controllers\Api\CalendarEventController;
+use App\Http\Controllers\Api\CallLogController;
+use App\Http\Controllers\Api\EmailLogController;
 use App\Models\CampaignTargetList;
 use App\Models\WebFormSubmission;
 use Illuminate\Support\Facades\Route;
@@ -172,6 +176,22 @@ Route::name('api.')->middleware(['auth:sanctum', App\Http\Middleware\TenantScope
 
     // Knowledge Base
     Route::apiResource('kb-articles', KbArticleController::class);
+
+    // =====================================================
+    // Activity & Communication Management
+    // =====================================================
+
+    // Tasks
+    Route::apiResource('tasks', TaskController::class);
+
+    // Calendar Events
+    Route::apiResource('calendar-events', CalendarEventController::class);
+
+    // Call Logs
+    Route::apiResource('call-logs', CallLogController::class);
+
+    // Email Logs
+    Route::apiResource('email-logs', EmailLogController::class);
 
     // Admin routes
     Route::middleware(['role:admin'])->group(function () {

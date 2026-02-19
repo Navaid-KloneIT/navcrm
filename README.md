@@ -325,6 +325,21 @@ Then open **http://localhost:8000** in your browser.
 - External `message_id` for deduplication with email clients
 - Polymorphic association to Contacts, Leads, and Accounts
 
+### Analytics & Reporting
+
+#### Analytics Dashboard
+- Per-user drag-and-drop widget dashboard (12 available widget types)
+- Widgets: Pipeline Summary, Leads by Status, Revenue by Month, Top Deals, Deals by Stage, Won vs Lost, Open Tickets, Ticket SLA, Ticket by Priority, Recent Activities, Task Overview, Conversion Funnel
+- Widget visibility toggle (show/hide individual widgets per user)
+- Layout persistence via AJAX (drag-and-drop order saved to `dashboard_widgets` table)
+- Built with SortableJS for drag-and-drop and Chart.js for charts
+
+#### Standard Reports (4 built-in)
+- **Sales Activity Report** — activity count per rep (calls, emails, meetings, tasks); activity mix doughnut chart; daily trend line chart; date range filter
+- **Sales Performance Report** — win rate, closed revenue, average deal size per rep; won vs open pipeline bar chart; top performers table; date range filter
+- **Funnel Analysis Report** — stage-by-stage conversion rates with drop-off visualization; horizontal bar chart; overall win rate KPI; open pipeline value KPI
+- **Service Report** — ticket resolution metrics; average first response and resolution times; SLA breach count; charts by status/priority/agent; date range filter
+
 ### Dashboard
 - KPI cards: Contacts, Accounts, Leads, Open Opportunities, Closed Revenue
 - Recent activities feed
@@ -407,6 +422,8 @@ navcrm/
 │   │   │   │
 │   │   │   ├── AccountWebController.php     # Web Blade controllers (session auth)
 │   │   │   ├── ActivityWebController.php
+│   │   │   ├── AnalyticsDashboardWebController.php
+│   │   │   ├── AnalyticsReportWebController.php
 │   │   │   ├── CalendarEventWebController.php
 │   │   │   ├── CallLogWebController.php
 │   │   │   ├── CampaignWebController.php
@@ -452,7 +469,8 @@ navcrm/
 │   │
 │   ├── Models/
 │   │   ├── Concerns/
-│   │   │   └── BelongsToTenant.php          # Global scope + auto tenant_id
+│   │   │   ├── BelongsToTenant.php          # Global scope + auto tenant_id
+│   │   │   └── Filterable.php               # Reusable scopeSearch / scopeFilterOwner / scopeFilterDateRange
 │   │   ├── Account.php
 │   │   ├── Activity.php
 │   │   ├── Address.php
@@ -461,6 +479,7 @@ navcrm/
 │   │   ├── Campaign.php
 │   │   ├── CampaignTargetList.php
 │   │   ├── Contact.php
+│   │   ├── DashboardWidget.php
 │   │   ├── EmailCampaign.php
 │   │   ├── EmailLog.php
 │   │   ├── EmailTemplate.php
@@ -487,6 +506,7 @@ navcrm/
 │   │   └── WebFormSubmission.php
 │   │
 │   └── Services/
+│       ├── AnalyticsService.php             # KPI data, chart datasets, report data for all 4 analytics reports
 │       ├── ForecastService.php
 │       ├── LeadConversionService.php
 │       ├── QuoteCalculationService.php
@@ -533,6 +553,13 @@ navcrm/
 │       │   └── show.blade.php
 │       ├── activities/
 │       │   └── index.blade.php
+│       ├── analytics/
+│       │   ├── dashboard.blade.php          # Drag-and-drop widget dashboard (SortableJS + Chart.js)
+│       │   └── reports/
+│       │       ├── sales-activity.blade.php # Activity count per rep + daily trend chart
+│       │       ├── sales-performance.blade.php # Win rate, revenue per rep + bar chart
+│       │       ├── funnel.blade.php         # Stage conversion funnel + horizontal bar chart
+│       │       └── service.blade.php        # Ticket metrics + SLA breach + agent charts
 │       ├── opportunities/
 │       │   ├── index.blade.php              # Kanban + table view
 │       │   ├── create.blade.php             # Shared create/edit form
@@ -674,6 +701,14 @@ GET|PUT|DELETE    /activity/calls/{id}            → show / edit / update / del
 GET|POST          /activity/emails                → list / create
 GET|PUT|DELETE    /activity/emails/{id}           → show / edit / update / delete
 
+GET               /analytics                          → analytics dashboard
+POST              /analytics/dashboard/layout         → save widget layout (AJAX)
+POST              /analytics/dashboard/widget/toggle  → toggle widget visibility (AJAX)
+GET               /analytics/reports/sales-activity   → sales activity report
+GET               /analytics/reports/sales-performance → sales performance report
+GET               /analytics/reports/funnel           → funnel analysis report
+GET               /analytics/reports/service          → service report
+
 GET               /settings          → settings home
 GET|PUT           /settings/profile  → profile
 PUT               /settings/password → change password
@@ -777,6 +812,7 @@ PUT     /api/profile/password
 | CalendarEvent | calendar_events | morphTo eventable (Contact/Account/Opportunity), belongsTo organizer |
 | CallLog | call_logs | morphTo loggable (Contact/Lead/Account), belongsTo User |
 | EmailLog | email_logs | morphTo emailable (Contact/Lead/Account), belongsTo User |
+| DashboardWidget | dashboard_widgets | belongsTo User; unique(user_id, widget_type); stores widget order + visibility |
 
 ---
 

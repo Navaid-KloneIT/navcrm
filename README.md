@@ -180,6 +180,31 @@ php artisan serve
 - Submission-to-lead/contact conversion workflow
 - Embeddable on landing pages
 
+### Customer Service & Support (Help Desk)
+
+#### Tickets
+- Auto-generated ticket numbers (TK-XXXXX format)
+- Priority levels: Low (72h SLA), Medium (24h SLA), High (8h SLA), Critical (4h SLA)
+- Status workflow: Open → In Progress → Escalated → Resolved → Closed
+- SLA tracking with breach and warning badges
+- Channel tracking: Email, Portal, Phone, Manual
+- Agent assignment, threaded comments with internal note toggle
+- Resolved/Closed timestamps and first response time recording
+- Linked to contacts and accounts
+
+#### Knowledge Base
+- Searchable article repository with categories
+- Internal vs. Public visibility toggle and Published/Draft status
+- View count tracking, author attribution, auto-generated slugs
+- Soft deletes
+
+#### Customer Self-Service Portal
+- Standalone portal at `/portal` with its own layout (no CRM sidebar)
+- Session-based portal authentication separate from staff auth
+- Contact portal access enabled per-contact via `portal_active` + `portal_password`
+- Customers can submit, view and reply to their own tickets
+- Non-internal replies visible in thread; closed tickets show read-only view
+
 ### Dashboard
 - KPI cards: Contacts, Accounts, Leads, Open Opportunities, Closed Revenue
 - Recent activities feed
@@ -445,6 +470,22 @@ GET|PUT|DELETE    /marketing/landing-pages/{id}       → show / edit / update /
 GET|POST          /marketing/web-forms                → list / create
 GET|PUT|DELETE    /marketing/web-forms/{id}           → show / edit / update / delete
 POST              /marketing/web-forms/submissions/{id}/convert → convert to lead/contact
+
+GET|POST          /support/tickets                → list / create
+GET|PUT|DELETE    /support/tickets/{id}           → show / edit / update / delete
+POST              /support/tickets/{id}/comment   → add reply
+POST              /support/tickets/{id}/status    → change status
+GET|POST          /support/kb-articles            → list / create
+GET|PUT|DELETE    /support/kb-articles/{id}       → show / edit / update / delete
+
+GET               /portal/login                   → portal login form
+POST              /portal/login                   → portal authenticate
+POST              /portal/logout                  → portal sign out
+GET               /portal                         → portal dashboard
+GET               /portal/tickets                 → my tickets (portal)
+GET|POST          /portal/tickets/create          → submit ticket (portal)
+GET               /portal/tickets/{id}            → view ticket (portal)
+POST              /portal/tickets/{id}/comment    → reply to ticket (portal)
 
 GET               /settings          → settings home
 GET|PUT           /settings/profile  → profile

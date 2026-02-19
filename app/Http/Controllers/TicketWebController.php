@@ -41,15 +41,32 @@ class TicketWebController extends Controller
             $query->where('assigned_to', $assignedTo);
         }
 
+        if ($channel = $request->get('channel')) {
+            $query->where('channel', $channel);
+        }
+
+        if ($accountId = $request->get('account_id')) {
+            $query->where('account_id', $accountId);
+        }
+
+        if ($dateFrom = $request->get('date_from')) {
+            $query->whereDate('created_at', '>=', $dateFrom);
+        }
+
+        if ($dateTo = $request->get('date_to')) {
+            $query->whereDate('created_at', '<=', $dateTo);
+        }
+
         $tickets = $query->latest()->paginate(25)->withQueryString();
 
         $statusCounts = Ticket::selectRaw('status, count(*) as count')
             ->groupBy('status')
             ->pluck('count', 'status');
 
-        $agents = User::orderBy('name')->get(['id', 'name']);
+        $agents   = User::orderBy('name')->get(['id', 'name']);
+        $accounts = Account::orderBy('name')->get(['id', 'name']);
 
-        return view('support.tickets.index', compact('tickets', 'statusCounts', 'agents'));
+        return view('support.tickets.index', compact('tickets', 'statusCounts', 'agents', 'accounts'));
     }
 
     public function create(): View

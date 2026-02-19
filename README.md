@@ -35,6 +35,9 @@ php artisan key:generate
 # 4. Run migrations and seed
 php artisan migrate
 php artisan db:seed
+php artisan db:seed --class=MarketingDemoSeeder
+php artisan db:seed --class=SupportDemoSeeder
+php artisan db:seed --class=ActivityDemoSeeder
 
 # 5. Start development server
 php artisan serve
@@ -205,6 +208,44 @@ php artisan serve
 - Customers can submit, view and reply to their own tickets
 - Non-internal replies visible in thread; closed tickets show read-only view
 
+### Activity & Communication Management
+
+#### Task Management
+- Tasks with title, description, due date, due time, priority, and status
+- Priority levels: Low / Medium / High / Urgent
+- Status workflow: Pending → In Progress → Completed / Cancelled
+- Polymorphic association to Contacts, Accounts, and Opportunities
+- Recurring tasks: daily, weekly, monthly, quarterly, yearly with configurable interval and end date
+- Assignee and creator tracking per task
+- Completed timestamp recorded on task completion
+- Soft deletes
+
+#### Calendar Events
+- Event types: Meeting, Call, Demo, Follow-Up, Webinar, Other
+- Status workflow: Scheduled → Completed / Cancelled / No-Show
+- Start/end datetime with all-day toggle
+- Location and meeting link fields (Zoom, Teams, Google Meet)
+- External calendar sync fields: `external_calendar_id` + `external_calendar_source` (Google, Outlook, iCal)
+- Calendly-style invite URL for customer self-booking
+- Polymorphic association to Contacts, Accounts, and Opportunities
+- Organizer assignment and soft deletes
+
+#### Call Logging
+- Direction tracking: Inbound / Outbound
+- Status: Completed, No Answer, Busy, Voicemail, Failed
+- Duration in seconds with automatic formatting
+- Phone number, optional VoIP recording URL
+- Polymorphic association to Contacts, Leads, and Accounts
+- Called-at timestamp and assigned user
+
+#### Email Logging
+- Direction tracking: Inbound / Outbound
+- Source tracking: Gmail, Outlook, BCC Dropbox, Manual
+- Open and click timestamp tracking (`opened_at`)
+- CC recipients stored as JSON
+- External `message_id` for deduplication with email clients
+- Polymorphic association to Contacts, Leads, and Accounts
+
 ### Dashboard
 - KPI cards: Contacts, Accounts, Leads, Open Opportunities, Closed Revenue
 - Recent activities feed
@@ -308,12 +349,19 @@ navcrm/
 │   │   ├── Account.php
 │   │   ├── Activity.php
 │   │   ├── Address.php
+│   │   ├── Account.php
+│   │   ├── Activity.php
+│   │   ├── Address.php
+│   │   ├── CalendarEvent.php
+│   │   ├── CallLog.php
 │   │   ├── Campaign.php
 │   │   ├── CampaignTargetList.php
 │   │   ├── Contact.php
 │   │   ├── EmailCampaign.php
+│   │   ├── EmailLog.php
 │   │   ├── EmailTemplate.php
 │   │   ├── ForecastEntry.php
+│   │   ├── KbArticle.php
 │   │   ├── LandingPage.php
 │   │   ├── Lead.php
 │   │   ├── Note.php
@@ -326,7 +374,10 @@ navcrm/
 │   │   ├── QuoteLineItem.php
 │   │   ├── SalesTarget.php
 │   │   ├── Tag.php
+│   │   ├── Task.php
 │   │   ├── Tenant.php
+│   │   ├── Ticket.php
+│   │   ├── TicketComment.php
 │   │   ├── User.php
 │   │   ├── WebForm.php
 │   │   └── WebFormSubmission.php
@@ -338,9 +389,15 @@ navcrm/
 │       └── QuotePdfService.php
 │
 ├── database/
-│   ├── migrations/                          # 36+ migration files
+│   ├── migrations/                          # 40+ migration files
 │   ├── factories/                           # Model factories for testing/seeding
 │   └── seeders/
+│       ├── DatabaseSeeder.php               # Calls RolePermissionSeeder + DemoDataSeeder
+│       ├── RolePermissionSeeder.php         # Roles and permissions setup
+│       ├── DemoDataSeeder.php               # Core + SFA demo data
+│       ├── MarketingDemoSeeder.php          # Marketing Automation demo data
+│       ├── SupportDemoSeeder.php            # Customer Service & Support demo data
+│       └── ActivityDemoSeeder.php           # Activity & Communication demo data
 │
 ├── resources/
 │   ├── css/
@@ -573,6 +630,13 @@ PUT     /api/profile/password
 | LandingPage | landing_pages | belongsTo WebForm |
 | WebForm | web_forms | hasMany WebFormSubmissions, LandingPages |
 | WebFormSubmission | web_form_submissions | belongsTo WebForm |
+| Ticket | tickets | belongsTo Contact/Account, hasMany TicketComments |
+| TicketComment | ticket_comments | belongsTo Ticket, belongsTo User |
+| KbArticle | kb_articles | belongsTo User (author) |
+| Task | tasks | morphTo taskable (Contact/Account/Opportunity), belongsTo assignee/creator |
+| CalendarEvent | calendar_events | morphTo eventable (Contact/Account/Opportunity), belongsTo organizer |
+| CallLog | call_logs | morphTo loggable (Contact/Lead/Account), belongsTo User |
+| EmailLog | email_logs | morphTo emailable (Contact/Lead/Account), belongsTo User |
 
 ---
 

@@ -25,6 +25,8 @@ use App\Http\Controllers\TaskWebController;
 use App\Http\Controllers\CalendarEventWebController;
 use App\Http\Controllers\CallLogWebController;
 use App\Http\Controllers\EmailLogWebController;
+use App\Http\Controllers\AnalyticsDashboardWebController;
+use App\Http\Controllers\AnalyticsReportWebController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -303,6 +305,24 @@ Route::middleware(['auth'])->group(function () {
             'update'  => 'emails.update',
             'destroy' => 'emails.destroy',
         ]);
+    });
+
+    // ── Analytics & Reporting ─────────────────────────────────────────────
+    Route::prefix('analytics')->name('analytics.')->group(function () {
+        Route::get('/dashboard',
+            [AnalyticsDashboardWebController::class, 'index'])->name('dashboard');
+        Route::post('/dashboard/layout',
+            [AnalyticsDashboardWebController::class, 'updateLayout'])->name('dashboard.layout');
+        Route::post('/dashboard/widget/toggle',
+            [AnalyticsDashboardWebController::class, 'toggleWidget'])->name('dashboard.toggle');
+        Route::get('/reports/sales-activity',
+            [AnalyticsReportWebController::class, 'salesActivity'])->name('reports.sales-activity');
+        Route::get('/reports/sales-performance',
+            [AnalyticsReportWebController::class, 'salesPerformance'])->name('reports.sales-performance');
+        Route::get('/reports/funnel',
+            [AnalyticsReportWebController::class, 'funnelAnalysis'])->name('reports.funnel');
+        Route::get('/reports/service',
+            [AnalyticsReportWebController::class, 'serviceReport'])->name('reports.service');
     });
 
     // ── Settings ──────────────────────────────────────────────────────────

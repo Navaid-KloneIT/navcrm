@@ -243,6 +243,52 @@
         </a>
       </div>
 
+      {{-- Activity --}}
+      <div class="ncv-nav-section">
+        <div class="ncv-nav-label">Activity</div>
+
+        <a href="{{ route('activity.tasks.index') }}"
+           class="ncv-nav-item {{ request()->routeIs('activity.tasks.*') ? 'active' : '' }}"
+           data-tooltip="Tasks">
+          <svg class="ncv-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 11l3 3L22 4"/>
+            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+          </svg>
+          <span class="ncv-nav-text">Tasks</span>
+        </a>
+
+        <a href="{{ route('activity.calendar.index') }}"
+           class="ncv-nav-item {{ request()->routeIs('activity.calendar.*') ? 'active' : '' }}"
+           data-tooltip="Calendar">
+          <svg class="ncv-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="4" width="18" height="18" rx="2"/>
+            <line x1="16" y1="2" x2="16" y2="6"/>
+            <line x1="8"  y1="2" x2="8"  y2="6"/>
+            <line x1="3"  y1="10" x2="21" y2="10"/>
+          </svg>
+          <span class="ncv-nav-text">Calendar</span>
+        </a>
+
+        <a href="{{ route('activity.calls.index') }}"
+           class="ncv-nav-item {{ request()->routeIs('activity.calls.*') ? 'active' : '' }}"
+           data-tooltip="Call Logs">
+          <svg class="ncv-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13 19.79 19.79 0 0 1 1.61 4.38 2 2 0 0 1 3.58 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.18 6.18l1.27-.82a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
+          </svg>
+          <span class="ncv-nav-text">Call Logs</span>
+        </a>
+
+        <a href="{{ route('activity.emails.index') }}"
+           class="ncv-nav-item {{ request()->routeIs('activity.emails.*') ? 'active' : '' }}"
+           data-tooltip="Email Logs">
+          <svg class="ncv-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+            <polyline points="22,6 12,13 2,6"/>
+          </svg>
+          <span class="ncv-nav-text">Email Logs</span>
+        </a>
+      </div>
+
       {{-- Admin (conditional) --}}
       @if(auth()->user()?->hasRole('admin'))
       <div class="ncv-nav-section">

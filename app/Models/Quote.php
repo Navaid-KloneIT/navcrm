@@ -32,6 +32,11 @@ class Quote extends Model
         'notes',
         'terms',
         'prepared_by',
+        'approval_required',
+        'approved_by',
+        'approved_at',
+        'rejection_reason',
+        'rejected_at',
     ];
 
     protected function casts(): array
@@ -39,6 +44,9 @@ class Quote extends Model
         return [
             'status' => QuoteStatus::class,
             'valid_until' => 'date',
+            'approval_required' => 'boolean',
+            'approved_at' => 'datetime',
+            'rejected_at' => 'datetime',
             'subtotal' => 'decimal:2',
             'discount_value' => 'decimal:2',
             'discount_amount' => 'decimal:2',

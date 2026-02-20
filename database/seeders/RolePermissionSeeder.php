@@ -20,6 +20,7 @@ class RolePermissionSeeder extends Seeder
         $modules = [
             'contacts', 'accounts', 'leads', 'users', 'roles', 'tags',
             'opportunities', 'products', 'price-books', 'quotes', 'forecasts', 'sales-targets',
+            'projects', 'timesheets',
         ];
         $actions = ['view', 'create', 'update', 'delete'];
 
@@ -75,7 +76,9 @@ class RolePermissionSeeder extends Seeder
                     ->orWhere('name', 'convert-leads')
                     ->orWhere('name', 'export-data')
                     ->orWhere('name', 'generate-quotes')
-                    ->orWhere('name', 'manage-pipeline');
+                    ->orWhere('name', 'manage-pipeline')
+                    ->orWhere('name', 'like', '%-projects')
+                    ->orWhere('name', 'like', '%-timesheets');
             })
             ->get();
         $managerRole->syncPermissions($managerPermissions);
@@ -97,6 +100,8 @@ class RolePermissionSeeder extends Seeder
                     'view-quotes', 'create-quotes', 'update-quotes',
                     'view-forecasts',
                     'view-sales-targets',
+                    'view-projects',
+                    'view-timesheets',
                     'convert-leads',
                     'generate-quotes',
                 ]);

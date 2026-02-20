@@ -20,6 +20,7 @@ class DatabaseSeeder extends Seeder
             FinanceDemoSeeder::class,
             ProjectDemoSeeder::class,
             DocumentDemoSeeder::class,
+            WorkflowDemoSeeder::class,
         ]);
     }
 }

@@ -31,6 +31,9 @@ use App\Http\Controllers\InvoiceWebController;
 use App\Http\Controllers\ExpenseWebController;
 use App\Http\Controllers\ProjectWebController;
 use App\Http\Controllers\TimesheetWebController;
+use App\Http\Controllers\DocumentTemplateWebController;
+use App\Http\Controllers\DocumentWebController;
+use App\Http\Controllers\DocumentSigningController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -407,6 +410,30 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/{timesheet}',   [TimesheetWebController::class, 'destroy'])->name('destroy');
     });
 
+    // ── Document & Contract Management ────────────────────────────────────
+    Route::prefix('document-templates')->name('document-templates.')->group(function () {
+        Route::get('/',                  [DocumentTemplateWebController::class, 'index'])->name('index');
+        Route::get('/create',            [DocumentTemplateWebController::class, 'create'])->name('create');
+        Route::post('/',                 [DocumentTemplateWebController::class, 'store'])->name('store');
+        Route::get('/{documentTemplate}',      [DocumentTemplateWebController::class, 'show'])->name('show');
+        Route::get('/{documentTemplate}/edit', [DocumentTemplateWebController::class, 'edit'])->name('edit');
+        Route::put('/{documentTemplate}',      [DocumentTemplateWebController::class, 'update'])->name('update');
+        Route::delete('/{documentTemplate}',   [DocumentTemplateWebController::class, 'destroy'])->name('destroy');
+    });
+
+    Route::prefix('documents')->name('documents.')->group(function () {
+        Route::get('/',                    [DocumentWebController::class, 'index'])->name('index');
+        Route::get('/create',              [DocumentWebController::class, 'create'])->name('create');
+        Route::post('/',                   [DocumentWebController::class, 'store'])->name('store');
+        Route::get('/{document}',          [DocumentWebController::class, 'show'])->name('show');
+        Route::get('/{document}/edit',     [DocumentWebController::class, 'edit'])->name('edit');
+        Route::put('/{document}',          [DocumentWebController::class, 'update'])->name('update');
+        Route::delete('/{document}',       [DocumentWebController::class, 'destroy'])->name('destroy');
+        Route::get('/{document}/download', [DocumentWebController::class, 'download'])->name('download');
+        Route::get('/{document}/send',     [DocumentWebController::class, 'sendForm'])->name('send');
+        Route::post('/{document}/send',    [DocumentWebController::class, 'send'])->name('send.store');
+    });
+
     // ── Settings ──────────────────────────────────────────────────────────
     Route::prefix('settings')->name('settings.')->group(function () {
         Route::get('/',        [SettingsController::class, 'index'])->name('index');
@@ -426,3 +453,7 @@ Route::middleware(['auth'])->group(function () {
         });
     });
 });
+
+// ─── Public Signing Portal (no auth required) ──────────────────────────────
+Route::get('/sign/{token}',  [DocumentSigningController::class, 'show'])->name('signing.show');
+Route::post('/sign/{token}', [DocumentSigningController::class, 'sign'])->name('signing.sign');

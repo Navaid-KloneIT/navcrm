@@ -437,6 +437,30 @@
         </a>
       </div>
 
+      {{-- Automation --}}
+      <div class="ncv-nav-section">
+        <div class="ncv-nav-label">Automation</div>
+
+        <a href="{{ route('workflows.index') }}"
+           class="ncv-nav-item {{ request()->routeIs('workflows.*') ? 'active' : '' }}"
+           data-tooltip="Workflows">
+          <svg class="ncv-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+          </svg>
+          <span class="ncv-nav-text">Workflows</span>
+        </a>
+
+        <a href="{{ route('approvals.index') }}"
+           class="ncv-nav-item {{ request()->routeIs('approvals.*') ? 'active' : '' }}"
+           data-tooltip="Approvals">
+          <svg class="ncv-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+            <polyline points="22 4 12 14.01 9 11.01"/>
+          </svg>
+          <span class="ncv-nav-text">Approvals</span>
+        </a>
+      </div>
+
       {{-- Admin (conditional) --}}
       @if(auth()->user()?->hasRole('admin'))
       <div class="ncv-nav-section">

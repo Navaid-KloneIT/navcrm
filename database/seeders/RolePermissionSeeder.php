@@ -21,6 +21,7 @@ class RolePermissionSeeder extends Seeder
             'contacts', 'accounts', 'leads', 'users', 'roles', 'tags',
             'opportunities', 'products', 'price-books', 'quotes', 'forecasts', 'sales-targets',
             'projects', 'timesheets',
+            'documents', 'document-templates',
         ];
         $actions = ['view', 'create', 'update', 'delete'];
 
@@ -38,7 +39,7 @@ class RolePermissionSeeder extends Seeder
         }
 
         // Create special permissions
-        $specialPermissions = ['convert-leads', 'export-data', 'manage-settings', 'generate-quotes', 'manage-pipeline'];
+        $specialPermissions = ['convert-leads', 'export-data', 'manage-settings', 'generate-quotes', 'manage-pipeline', 'sign-documents'];
         foreach ($specialPermissions as $permissionName) {
             $permission = Permission::firstOrCreate([
                 'name' => $permissionName,
@@ -78,7 +79,10 @@ class RolePermissionSeeder extends Seeder
                     ->orWhere('name', 'generate-quotes')
                     ->orWhere('name', 'manage-pipeline')
                     ->orWhere('name', 'like', '%-projects')
-                    ->orWhere('name', 'like', '%-timesheets');
+                    ->orWhere('name', 'like', '%-timesheets')
+                    ->orWhere('name', 'like', '%-documents')
+                    ->orWhere('name', 'like', '%-document-templates')
+                    ->orWhere('name', 'sign-documents');
             })
             ->get();
         $managerRole->syncPermissions($managerPermissions);
@@ -102,6 +106,9 @@ class RolePermissionSeeder extends Seeder
                     'view-sales-targets',
                     'view-projects',
                     'view-timesheets',
+                    'view-documents',
+                    'view-document-templates',
+                    'sign-documents',
                     'convert-leads',
                     'generate-quotes',
                 ]);

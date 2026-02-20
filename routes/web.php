@@ -29,6 +29,8 @@ use App\Http\Controllers\AnalyticsDashboardWebController;
 use App\Http\Controllers\AnalyticsReportWebController;
 use App\Http\Controllers\InvoiceWebController;
 use App\Http\Controllers\ExpenseWebController;
+use App\Http\Controllers\ProjectWebController;
+use App\Http\Controllers\TimesheetWebController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -137,6 +139,9 @@ Route::middleware(['auth'])->group(function () {
         'update'  => 'opportunities.update',
         'destroy' => 'opportunities.destroy',
     ]);
+    Route::post('/opportunities/{opportunity}/convert-to-project',
+        [OpportunityWebController::class, 'convertToProject']
+    )->name('opportunities.convert-to-project');
 
     // ── Products ──────────────────────────────────────────────────────────
     Route::resource('products', ProductWebController::class)->names([
@@ -363,6 +368,43 @@ Route::middleware(['auth'])->group(function () {
             [ExpenseWebController::class, 'approve'])->name('expenses.approve');
         Route::post('/expenses/{expense}/reject',
             [ExpenseWebController::class, 'reject'])->name('expenses.reject');
+    });
+
+    // ── Project & Delivery Management ─────────────────────────────────────
+    Route::prefix('projects')->name('projects.')->group(function () {
+        Route::get('/',         [ProjectWebController::class, 'index'])->name('index');
+        Route::get('/create',   [ProjectWebController::class, 'create'])->name('create');
+        Route::post('/',        [ProjectWebController::class, 'store'])->name('store');
+        Route::get('/{project}',      [ProjectWebController::class, 'show'])->name('show');
+        Route::get('/{project}/edit', [ProjectWebController::class, 'edit'])->name('edit');
+        Route::put('/{project}',      [ProjectWebController::class, 'update'])->name('update');
+        Route::delete('/{project}',   [ProjectWebController::class, 'destroy'])->name('destroy');
+
+        // Milestones
+        Route::post('/{project}/milestones',
+            [ProjectWebController::class, 'storeMilestone'])->name('milestones.store');
+        Route::put('/{project}/milestones/{milestone}',
+            [ProjectWebController::class, 'updateMilestone'])->name('milestones.update');
+        Route::delete('/{project}/milestones/{milestone}',
+            [ProjectWebController::class, 'destroyMilestone'])->name('milestones.destroy');
+
+        // Members
+        Route::post('/{project}/members',
+            [ProjectWebController::class, 'addMember'])->name('members.add');
+        Route::delete('/{project}/members/{user}',
+            [ProjectWebController::class, 'removeMember'])->name('members.remove');
+    });
+
+    // ── Timesheets ────────────────────────────────────────────────────────
+    Route::prefix('timesheets')->name('timesheets.')->group(function () {
+        Route::get('/',             [TimesheetWebController::class, 'index'])->name('index');
+        Route::get('/workload',     [TimesheetWebController::class, 'workload'])->name('workload');
+        Route::get('/create',       [TimesheetWebController::class, 'create'])->name('create');
+        Route::post('/',            [TimesheetWebController::class, 'store'])->name('store');
+        Route::get('/{timesheet}',      [TimesheetWebController::class, 'show'])->name('show');
+        Route::get('/{timesheet}/edit', [TimesheetWebController::class, 'edit'])->name('edit');
+        Route::put('/{timesheet}',      [TimesheetWebController::class, 'update'])->name('update');
+        Route::delete('/{timesheet}',   [TimesheetWebController::class, 'destroy'])->name('destroy');
     });
 
     // ── Settings ──────────────────────────────────────────────────────────

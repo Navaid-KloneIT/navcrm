@@ -30,6 +30,8 @@ use App\Http\Controllers\Api\CallLogController;
 use App\Http\Controllers\Api\EmailLogController;
 use App\Http\Controllers\Api\InvoiceController;
 use App\Http\Controllers\Api\ExpenseController;
+use App\Http\Controllers\Api\ProjectController;
+use App\Http\Controllers\Api\TimesheetController;
 use App\Models\CampaignTargetList;
 use App\Models\WebFormSubmission;
 use Illuminate\Support\Facades\Route;
@@ -207,6 +209,16 @@ Route::name('api.')->middleware(['auth:sanctum', App\Http\Middleware\TenantScope
     Route::apiResource('expenses', ExpenseController::class);
     Route::post('/expenses/{expense}/approve', [ExpenseController::class, 'approve']);
     Route::post('/expenses/{expense}/reject',  [ExpenseController::class, 'reject']);
+
+    // =====================================================
+    // Project & Delivery Management
+    // =====================================================
+
+    // Projects
+    Route::apiResource('projects', ProjectController::class);
+
+    // Timesheets
+    Route::apiResource('timesheets', TimesheetController::class);
 
     // Admin routes
     Route::middleware(['role:admin'])->group(function () {

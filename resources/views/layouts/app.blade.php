@@ -369,6 +369,45 @@
         </a>
       </div>
 
+      {{-- Projects & Delivery --}}
+      <div class="ncv-nav-section">
+        <div class="ncv-nav-label">Projects</div>
+
+        <a href="{{ route('projects.index') }}"
+           class="ncv-nav-item {{ request()->routeIs('projects.*') && !request()->routeIs('projects.') ? 'active' : '' }}"
+           data-tooltip="Projects">
+          <svg class="ncv-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="7" height="7"/>
+            <rect x="14" y="3" width="7" height="7"/>
+            <rect x="14" y="14" width="7" height="7"/>
+            <rect x="3" y="14" width="7" height="7"/>
+          </svg>
+          <span class="ncv-nav-text">Projects</span>
+        </a>
+
+        <a href="{{ route('timesheets.index') }}"
+           class="ncv-nav-item {{ request()->routeIs('timesheets.index') || request()->routeIs('timesheets.show') || request()->routeIs('timesheets.create') || request()->routeIs('timesheets.edit') ? 'active' : '' }}"
+           data-tooltip="Timesheets">
+          <svg class="ncv-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <polyline points="12 6 12 12 16 14"/>
+          </svg>
+          <span class="ncv-nav-text">Timesheets</span>
+        </a>
+
+        <a href="{{ route('timesheets.workload') }}"
+           class="ncv-nav-item {{ request()->routeIs('timesheets.workload') ? 'active' : '' }}"
+           data-tooltip="Workload">
+          <svg class="ncv-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+            <circle cx="12" cy="7" r="4"/>
+            <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+          <span class="ncv-nav-text">Workload</span>
+        </a>
+      </div>
+
       {{-- Admin (conditional) --}}
       @if(auth()->user()?->hasRole('admin'))
       <div class="ncv-nav-section">

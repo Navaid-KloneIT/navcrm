@@ -413,6 +413,38 @@ Then open **http://localhost:8000** in your browser.
 - When a sent/signed document body is edited, a version snapshot is automatically saved
 - Version history tab on the document show page with collapsible HTML previews
 
+### Automation & Workflow Engine
+
+#### Trigger-Based Workflows (IFTTT Rules)
+- Create automation rules with configurable triggers, conditions, and actions
+- **Triggers:** Lead status changed, Opportunity stage changed, Quote discount exceeded, Ticket SLA breached
+- **Conditions:** AND-logic filters on any entity field (equals, not-equals, greater than, less than, contains)
+- **Actions:** Send email notification, assign user, change status, send webhook (HTTP POST)
+- Active/inactive toggle per workflow with one-click enable/disable
+- Workflow run audit log with status tracking (pending → running → completed / failed)
+- Actions executed via queued jobs (database driver) for non-blocking processing
+- Token substitution in email messages using `{field_name}` syntax
+
+#### Approval Processes (Quote Discounts)
+- Automatic quote locking when discount exceeds a configurable threshold (default 15%)
+- Quote status extended with `Pending Approval` and `Approved` states
+- Dedicated approval queue at `/approvals` listing all pending quotes
+- One-click approve or reject with mandatory rejection reason
+- Approval columns: `approved_by`, `approved_at`, `rejection_reason`, `rejected_at`
+- Observer-based detection — discount threshold checked on every quote save
+
+#### Webhooks
+- Send JSON payloads to external URLs on any trigger event
+- Payload includes: event name, entity type, entity ID, full context data, timestamp
+- 10-second timeout with 3 retry attempts on failure
+- Webhook URL configured per workflow action
+
+#### SLA Breach Detection
+- Scheduled artisan command `workflow:check-sla` runs every 5 minutes
+- Detects open tickets past their `sla_due_at` deadline where `sla_breached_at` is null
+- Marks tickets as breached and fires the `ticket_sla_breached` automation trigger
+- Works with existing SLA badge system (breach/warning indicators)
+
 ### Analytics & Reporting
 
 #### Analytics Dashboard
@@ -477,7 +509,8 @@ navcrm/
 │   │   ├── PaymentStatus.php            # pending|completed|failed|refunded
 │   │   ├── LeadStatus.php
 │   │   ├── OpportunitySource.php
-│   │   ├── QuoteStatus.php
+│   │   ├── QuoteStatus.php              # draft|sent|accepted|rejected|expired|pending_approval|approved
+│   │   ├── WorkflowTrigger.php          # lead_status_changed|opportunity_stage_changed|quote_discount_exceeded|ticket_sla_breached
 │   │   ├── TaskPriority.php             # low, medium, high, urgent
 │   │   ├── TaskRecurrence.php           # daily, weekly, monthly, quarterly, yearly
 │   │   ├── TaskStatus.php               # pending, in_progress, completed, cancelled
@@ -503,6 +536,7 @@ navcrm/
 │   │   │   ├── ProjectController.php
 │   │   │   └── TimesheetController.php
 │   │   │   ├── DocumentController.php
+│   │   │   │   ├── WorkflowController.php
 │   │   │   │   ├── ForecastController.php
 │   │   │   │   ├── InvoiceController.php
 │   │   │   │   ├── KbArticleController.php
@@ -540,6 +574,8 @@ navcrm/
 │   │   │   ├── DocumentTemplateWebController.php
 │   │   │   ├── DocumentWebController.php
 │   │   │   ├── DocumentSigningController.php
+│   │   │   ├── WorkflowWebController.php
+│   │   │   ├── ApprovalWebController.php
 │   │   │   ├── ForecastWebController.php
 │   │   │   ├── InvoiceWebController.php
 │   │   │   ├── KbArticleWebController.php
@@ -620,7 +656,23 @@ navcrm/
 │   │   ├── TicketComment.php
 │   │   ├── User.php
 │   │   ├── WebForm.php
-│   │   └── WebFormSubmission.php
+│   │   ├── WebFormSubmission.php
+│   │   ├── Workflow.php
+│   │   ├── WorkflowCondition.php
+│   │   ├── WorkflowAction.php
+│   │   └── WorkflowRun.php
+│   │
+│   ├── Observers/
+│   │   ├── LeadObserver.php               # Fires lead_status_changed trigger
+│   │   ├── OpportunityObserver.php        # Fires opportunity_stage_changed trigger
+│   │   └── QuoteObserver.php              # Discount threshold check + fires quote_discount_exceeded
+│   │
+│   ├── Jobs/
+│   │   └── ExecuteWorkflowAction.php      # Queued job: send_email, assign_user, change_status, send_webhook
+│   │
+│   ├── Console/
+│   │   └── Commands/
+│   │       └── CheckSlaBreaches.php       # Artisan: workflow:check-sla (every 5 min via scheduler)
 │   │
 │   └── Services/
 │       ├── AnalyticsService.php             # KPI data, chart datasets, report data for all 4 analytics reports
@@ -629,7 +681,8 @@ navcrm/
 │       ├── InvoiceService.php               # Invoice number generation, quote conversion, totals, payment status refresh, recurring
 │       ├── LeadConversionService.php
 │       ├── QuoteCalculationService.php
-│       └── QuotePdfService.php
+│       ├── QuotePdfService.php
+│       └── AutomationEngine.php           # Workflow trigger evaluation, condition matching, job dispatch
 │
 ├── database/
 │   ├── migrations/                          # 40+ migration files
@@ -643,7 +696,8 @@ navcrm/
 │       ├── ActivityDemoSeeder.php           # Activity & Communication demo data
 │       ├── FinanceDemoSeeder.php            # Finance & Billing demo data (tax rates, invoices, payments, expenses)
 │       ├── ProjectDemoSeeder.php            # Project & Delivery demo data (projects, milestones, members, timesheets)
-│       └── DocumentDemoSeeder.php           # Document & Contract demo data (templates, documents, signatories)
+│       ├── DocumentDemoSeeder.php           # Document & Contract demo data (templates, documents, signatories)
+│       └── WorkflowDemoSeeder.php          # Automation & Workflow demo data (6 workflows, runs, pending approval quote)
 │
 ├── resources/
 │   ├── css/
@@ -755,6 +809,13 @@ navcrm/
 │       │   ├── create.blade.php             # Shared create/edit form
 │       │   ├── show.blade.php               # Detail view
 │       │   └── workload.blade.php           # Per-user workload grid with utilization % bars
+│       ├── workflows/
+│       │   ├── index.blade.php              # Stats cards, filter bar, toggle active, runs count
+│       │   ├── create.blade.php             # Trigger select, dynamic condition/action rows (vanilla JS)
+│       │   ├── show.blade.php               # Workflow detail, conditions, actions, paginated run history
+│       │   └── _action_config.blade.php     # Action config partial (email/assign/status/webhook panels)
+│       ├── approvals/
+│       │   └── index.blade.php              # Pending quotes table with approve/reject actions
 │       ├── settings/
 │       │   ├── index.blade.php
 │       │   ├── profile.blade.php
@@ -875,6 +936,13 @@ GET|POST          /documents/{id}/send                → add signatory / get si
 GET               /sign/{token}                       → public signing portal (no auth)
 POST              /sign/{token}                       → submit signature
 
+GET|POST          /workflows                          → list / create workflow
+GET|PUT|DELETE    /workflows/{id}                     → show / edit / update / delete
+PATCH             /workflows/{id}/toggle              → toggle active/inactive
+GET               /approvals                          → pending quote approvals
+POST              /approvals/{id}/approve             → approve quote
+POST              /approvals/{id}/reject              → reject quote
+
 GET               /analytics                          → analytics dashboard
 POST              /analytics/dashboard/layout         → save widget layout (AJAX)
 POST              /analytics/dashboard/widget/toggle  → toggle widget visibility (AJAX)
@@ -959,6 +1027,9 @@ POST  /api/expenses/{id}/reject       (reject expense)
 # Document & Contract Management (protected)
 /api/documents       (CRUD)
 
+# Automation & Workflow Engine (protected)
+/api/workflows       (CRUD)
+
 # Admin only (role:admin required)
 /api/users           (CRUD + sync-roles)
 /api/roles           (CRUD)
@@ -1013,6 +1084,10 @@ POST  /api/expenses/{id}/reject       (reject expense)
 | Document | documents | BelongsToTenant+SoftDeletes; belongsTo Template/Account/Contact/Opportunity/owner/createdBy; hasMany Signatories/Versions |
 | DocumentSignatory | document_signatories | belongsTo Document; sign_token (unique UUID) |
 | DocumentVersion | document_versions | belongsTo Document/savedBy; version snapshot |
+| Workflow | workflows | BelongsToTenant+Filterable; hasMany Conditions/Actions/Runs; trigger_event cast to WorkflowTrigger enum |
+| WorkflowCondition | workflow_conditions | belongsTo Workflow; field/operator/value for AND-logic matching |
+| WorkflowAction | workflow_actions | belongsTo Workflow; action_config JSON; types: send_email/assign_user/change_status/send_webhook |
+| WorkflowRun | workflow_runs | belongsTo Workflow; audit log with context_data, actions_log JSON, status tracking |
 
 ---
 

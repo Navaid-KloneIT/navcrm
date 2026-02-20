@@ -33,6 +33,7 @@ use App\Http\Controllers\Api\ExpenseController;
 use App\Http\Controllers\Api\ProjectController;
 use App\Http\Controllers\Api\TimesheetController;
 use App\Http\Controllers\Api\DocumentController;
+use App\Http\Controllers\Api\WorkflowController;
 use App\Models\CampaignTargetList;
 use App\Models\WebFormSubmission;
 use Illuminate\Support\Facades\Route;
@@ -227,6 +228,9 @@ Route::name('api.')->middleware(['auth:sanctum', App\Http\Middleware\TenantScope
 
     // Documents
     Route::apiResource('documents', DocumentController::class);
+
+    // Workflows
+    Route::apiResource('workflows', WorkflowController::class);
 
     // Admin routes
     Route::middleware(['role:admin'])->group(function () {

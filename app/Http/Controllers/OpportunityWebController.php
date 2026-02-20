@@ -6,6 +6,7 @@ use App\Models\Account;
 use App\Models\Contact;
 use App\Models\Opportunity;
 use App\Models\PipelineStage;
+use App\Models\Project;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -152,5 +153,41 @@ class OpportunityWebController extends Controller
 
         return redirect()->route('opportunities.index')
             ->with('success', 'Opportunity deleted successfully.');
+    }
+
+    public function convertToProject(Opportunity $opportunity): RedirectResponse
+    {
+        // Guard: prevent duplicate projects from same opportunity
+        $existing = Project::where('opportunity_id', $opportunity->id)->first();
+        if ($existing) {
+            return redirect()->route('projects.show', $existing)
+                ->with('success', 'A project already exists for this opportunity.');
+        }
+
+        // Generate project number
+        $tenantId = auth()->user()->tenant_id;
+        $last = Project::withTrashed()->where('tenant_id', $tenantId)->max('project_number');
+        $number = 1;
+        if ($last && preg_match('/PRJ-(\d+)/', $last, $m)) {
+            $number = (int) $m[1] + 1;
+        }
+        $projectNumber = 'PRJ-' . str_pad($number, 5, '0', STR_PAD_LEFT);
+
+        $project = Project::create([
+            'project_number'      => $projectNumber,
+            'name'                => $opportunity->name,
+            'description'         => $opportunity->description,
+            'status'              => 'active',
+            'opportunity_id'      => $opportunity->id,
+            'account_id'          => $opportunity->account_id,
+            'contact_id'          => $opportunity->contact_id,
+            'manager_id'          => $opportunity->owner_id,
+            'is_from_opportunity' => true,
+            'created_by'          => auth()->id(),
+            'currency'            => 'USD',
+        ]);
+
+        return redirect()->route('projects.show', $project)
+            ->with('success', 'Project created from opportunity "' . $opportunity->name . '".');
     }
 }

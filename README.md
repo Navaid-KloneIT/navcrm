@@ -383,6 +383,36 @@ Then open **http://localhost:8000** in your browser.
 - Color-coded utilization bar: green (<80%), yellow (80–100%), red (>100% = overbooked)
 - Month selector for historical workload analysis
 
+### Document & Contract Management
+
+#### Document Templates
+- Reusable HTML templates with `{{Variable}}` placeholder syntax
+- Rich-text editor (Quill.js) with an inline variable cheatsheet
+- Template types: NDA, Contract, Proposal, Statement of Work, MSA, Other
+- Toggle active/inactive to control availability when creating documents
+- Preview rendered template body and see linked documents
+
+#### Documents
+- Auto-generated document numbers (`DOC-XXXXX` format, tenant-scoped)
+- Link documents to Accounts, Contacts, and Opportunities
+- Status workflow: Draft → Sent → Viewed → Signed / Rejected / Expired
+- Variable auto-fill when creating from a template (`{{Account.Name}}`, `{{Contact.Name}}`, `{{Opportunity.Value}}`, `{{Today.Date}}`, etc.)
+- Rich-text editor (Quill.js) for manual editing of document body
+- PDF download via DomPDF (`/documents/{id}/download`)
+- Filter by type, status, and account; summary stats (total / sent / signed / expired)
+
+#### E-Signatures (Built-in)
+- Send a document to one or more signatories; each gets a unique token-based URL
+- Public signing portal at `/sign/{token}` — no login required
+- Signature canvas powered by Signature_Pad.js (draw or type)
+- Tracks viewed_at, signed_at, IP address, and user_agent per signatory
+- Document status auto-updates to `signed` when all signatories have signed
+- Copy signing link directly from the document show page
+
+#### Version History
+- When a sent/signed document body is edited, a version snapshot is automatically saved
+- Version history tab on the document show page with collapsible HTML previews
+
 ### Analytics & Reporting
 
 #### Analytics Dashboard
@@ -438,6 +468,8 @@ navcrm/
 │   │   ├── ExpenseStatus.php            # pending|approved|rejected
 │   │   ├── MilestoneStatus.php          # pending|in_progress|completed
 │   │   ├── ProjectStatus.php            # planning|active|on_hold|completed|cancelled
+│   │   ├── DocumentStatus.php           # draft|sent|viewed|signed|rejected|expired
+│   │   ├── DocumentType.php             # nda|contract|proposal|sow|msa|other
 │   │   ├── ForecastCategory.php
 │   │   ├── InvoiceStatus.php            # draft|sent|partial|paid|overdue|cancelled|void
 │   │   ├── LeadScore.php
@@ -470,6 +502,7 @@ navcrm/
 │   │   │   │   ├── ExpenseController.php
 │   │   │   ├── ProjectController.php
 │   │   │   └── TimesheetController.php
+│   │   │   ├── DocumentController.php
 │   │   │   │   ├── ForecastController.php
 │   │   │   │   ├── InvoiceController.php
 │   │   │   │   ├── KbArticleController.php
@@ -504,6 +537,9 @@ navcrm/
 │   │   │   ├── ExpenseWebController.php
 │   │   │   ├── ProjectWebController.php
 │   │   │   ├── TimesheetWebController.php
+│   │   │   ├── DocumentTemplateWebController.php
+│   │   │   ├── DocumentWebController.php
+│   │   │   ├── DocumentSigningController.php
 │   │   │   ├── ForecastWebController.php
 │   │   │   ├── InvoiceWebController.php
 │   │   │   ├── KbArticleWebController.php
@@ -606,7 +642,8 @@ navcrm/
 │       ├── SupportDemoSeeder.php            # Customer Service & Support demo data
 │       ├── ActivityDemoSeeder.php           # Activity & Communication demo data
 │       ├── FinanceDemoSeeder.php            # Finance & Billing demo data (tax rates, invoices, payments, expenses)
-│       └── ProjectDemoSeeder.php            # Project & Delivery demo data (projects, milestones, members, timesheets)
+│       ├── ProjectDemoSeeder.php            # Project & Delivery demo data (projects, milestones, members, timesheets)
+│       └── DocumentDemoSeeder.php           # Document & Contract demo data (templates, documents, signatories)
 │
 ├── resources/
 │   ├── css/
@@ -829,6 +866,15 @@ GET|POST          /timesheets                         → list / create
 GET|PUT|DELETE    /timesheets/{id}                    → show / edit / update / delete
 GET               /timesheets/workload                → resource workload view
 
+GET|POST          /document-templates                 → list / create template
+GET|PUT|DELETE    /document-templates/{id}            → show / edit / update / delete
+GET|POST          /documents                          → list / create document
+GET|PUT|DELETE    /documents/{id}                     → show / edit / update / delete
+GET               /documents/{id}/download            → download PDF
+GET|POST          /documents/{id}/send                → add signatory / get signing link
+GET               /sign/{token}                       → public signing portal (no auth)
+POST              /sign/{token}                       → submit signature
+
 GET               /analytics                          → analytics dashboard
 POST              /analytics/dashboard/layout         → save widget layout (AJAX)
 POST              /analytics/dashboard/widget/toggle  → toggle widget visibility (AJAX)
@@ -910,6 +956,9 @@ POST  /api/expenses/{id}/reject       (reject expense)
 /api/projects        (CRUD)
 /api/timesheets      (CRUD)
 
+# Document & Contract Management (protected)
+/api/documents       (CRUD)
+
 # Admin only (role:admin required)
 /api/users           (CRUD + sync-roles)
 /api/roles           (CRUD)
@@ -960,6 +1009,10 @@ POST  /api/expenses/{id}/reject       (reject expense)
 | Project | projects | belongsTo Opportunity/Account/Contact/manager/createdBy; hasMany Milestones/Timesheets; belongsToMany members (Users via project_members) |
 | ProjectMilestone | project_milestones | belongsTo Project/createdBy |
 | Timesheet | timesheets | belongsTo Project/User/createdBy |
+| DocumentTemplate | document_templates | BelongsToTenant; hasMany Documents; createdBy |
+| Document | documents | BelongsToTenant+SoftDeletes; belongsTo Template/Account/Contact/Opportunity/owner/createdBy; hasMany Signatories/Versions |
+| DocumentSignatory | document_signatories | belongsTo Document; sign_token (unique UUID) |
+| DocumentVersion | document_versions | belongsTo Document/savedBy; version snapshot |
 
 ---
 

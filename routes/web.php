@@ -34,6 +34,8 @@ use App\Http\Controllers\TimesheetWebController;
 use App\Http\Controllers\DocumentTemplateWebController;
 use App\Http\Controllers\DocumentWebController;
 use App\Http\Controllers\DocumentSigningController;
+use App\Http\Controllers\WorkflowWebController;
+use App\Http\Controllers\ApprovalWebController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -432,6 +434,24 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/{document}/download', [DocumentWebController::class, 'download'])->name('download');
         Route::get('/{document}/send',     [DocumentWebController::class, 'sendForm'])->name('send');
         Route::post('/{document}/send',    [DocumentWebController::class, 'send'])->name('send.store');
+    });
+
+    // ── Automation & Workflow Engine ───────────────────────────────────────
+    Route::prefix('workflows')->name('workflows.')->group(function () {
+        Route::get('/',                    [WorkflowWebController::class, 'index'])->name('index');
+        Route::get('/create',              [WorkflowWebController::class, 'create'])->name('create');
+        Route::post('/',                   [WorkflowWebController::class, 'store'])->name('store');
+        Route::get('/{workflow}',          [WorkflowWebController::class, 'show'])->name('show');
+        Route::get('/{workflow}/edit',     [WorkflowWebController::class, 'edit'])->name('edit');
+        Route::put('/{workflow}',          [WorkflowWebController::class, 'update'])->name('update');
+        Route::delete('/{workflow}',       [WorkflowWebController::class, 'destroy'])->name('destroy');
+        Route::patch('/{workflow}/toggle', [WorkflowWebController::class, 'toggle'])->name('toggle');
+    });
+
+    Route::prefix('approvals')->name('approvals.')->group(function () {
+        Route::get('/',                    [ApprovalWebController::class, 'index'])->name('index');
+        Route::post('/{quote}/approve',    [ApprovalWebController::class, 'approve'])->name('approve');
+        Route::post('/{quote}/reject',     [ApprovalWebController::class, 'reject'])->name('reject');
     });
 
     // ── Settings ──────────────────────────────────────────────────────────

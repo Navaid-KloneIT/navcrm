@@ -351,6 +351,38 @@ Then open **http://localhost:8000** in your browser.
 - Approval workflow: Pending → Approved / Rejected (with approver and timestamp)
 - Receipt URL storage for expense documentation
 
+### Project & Delivery Management (Post-Sale)
+
+#### Projects
+- Auto-generated project numbers (`PRJ-XXXXX` format, tenant-scoped)
+- **Deal-to-Project Conversion** — one-click convert from Opportunity show page; guards against duplicates
+- Status workflow: Planning → Active → On Hold → Completed / Cancelled
+- Linked to Opportunity, Account, and Contact records
+- Budget and currency tracking
+- Table view + Kanban view (grouped by status) with localStorage view preference
+- Milestone progress bar on all project cards
+
+#### Project Milestones
+- Add, edit, and delete milestones inline on the Project show page
+- Per-milestone status: Pending / In Progress / Completed with auto-set `completed_at`
+- **Frappe Gantt chart** (CDN-loaded) on a dedicated Gantt tab — renders milestones as bars with Week/Month view modes
+- Overdue milestones highlighted in red
+
+#### Team Members (Resource Allocation)
+- Add team members to a project with role and allocated hours (pivot table)
+- Members list shown on Project show page with inline remove action
+
+#### Timesheets
+- Log hours against specific projects with date, description, billable flag, and billable rate
+- Billable vs. Non-Billable hour tracking per project
+- Filter timesheets by project, user, date range, and billable flag
+- Summary stats: total hours, billable hours, non-billable hours
+
+#### Workload View
+- Per-user table showing active projects, allocated hours, hours logged in selected month, and utilization %
+- Color-coded utilization bar: green (<80%), yellow (80–100%), red (>100% = overbooked)
+- Month selector for historical workload analysis
+
 ### Analytics & Reporting
 
 #### Analytics Dashboard
@@ -404,6 +436,8 @@ navcrm/
 │   │   ├── EmailSource.php              # gmail, outlook, bcc_dropbox, manual
 │   │   ├── ExpenseCategory.php          # travel|meals|software|entertainment|accommodation|other
 │   │   ├── ExpenseStatus.php            # pending|approved|rejected
+│   │   ├── MilestoneStatus.php          # pending|in_progress|completed
+│   │   ├── ProjectStatus.php            # planning|active|on_hold|completed|cancelled
 │   │   ├── ForecastCategory.php
 │   │   ├── InvoiceStatus.php            # draft|sent|partial|paid|overdue|cancelled|void
 │   │   ├── LeadScore.php
@@ -434,6 +468,8 @@ navcrm/
 │   │   │   │   ├── EmailLogController.php
 │   │   │   │   ├── EmailTemplateController.php
 │   │   │   │   ├── ExpenseController.php
+│   │   │   ├── ProjectController.php
+│   │   │   └── TimesheetController.php
 │   │   │   │   ├── ForecastController.php
 │   │   │   │   ├── InvoiceController.php
 │   │   │   │   ├── KbArticleController.php
@@ -466,6 +502,8 @@ navcrm/
 │   │   │   ├── EmailLogWebController.php
 │   │   │   ├── EmailTemplateWebController.php
 │   │   │   ├── ExpenseWebController.php
+│   │   │   ├── ProjectWebController.php
+│   │   │   ├── TimesheetWebController.php
 │   │   │   ├── ForecastWebController.php
 │   │   │   ├── InvoiceWebController.php
 │   │   │   ├── KbArticleWebController.php
@@ -528,6 +566,8 @@ navcrm/
 │   │   ├── Note.php
 │   │   ├── Opportunity.php
 │   │   ├── Payment.php
+│   ├── Project.php
+│   ├── ProjectMilestone.php
 │   │   ├── PipelineStage.php
 │   │   ├── PriceBook.php
 │   │   ├── PriceBookEntry.php
@@ -538,6 +578,7 @@ navcrm/
 │   │   ├── Tag.php
 │   │   ├── Task.php
 │   │   ├── TaxRate.php
+│   │   ├── Timesheet.php
 │   │   ├── Tenant.php
 │   │   ├── Ticket.php
 │   │   ├── TicketComment.php
@@ -564,7 +605,8 @@ navcrm/
 │       ├── MarketingDemoSeeder.php          # Marketing Automation demo data
 │       ├── SupportDemoSeeder.php            # Customer Service & Support demo data
 │       ├── ActivityDemoSeeder.php           # Activity & Communication demo data
-│       └── FinanceDemoSeeder.php            # Finance & Billing demo data (tax rates, invoices, payments, expenses)
+│       ├── FinanceDemoSeeder.php            # Finance & Billing demo data (tax rates, invoices, payments, expenses)
+│       └── ProjectDemoSeeder.php            # Project & Delivery demo data (projects, milestones, members, timesheets)
 │
 ├── resources/
 │   ├── css/
@@ -667,6 +709,15 @@ navcrm/
 │       │       ├── index.blade.php
 │       │       ├── create.blade.php         # Shared create/edit form
 │       │       └── show.blade.php
+│       ├── projects/
+│       │   ├── index.blade.php              # Table + Kanban view toggle (localStorage preference)
+│       │   ├── create.blade.php             # Shared create/edit form
+│       │   └── show.blade.php               # Milestones tab + Gantt (Frappe Gantt), members panel, timesheets tab
+│       ├── timesheets/
+│       │   ├── index.blade.php              # Table with filter bar + summary stats (total/billable/non-billable)
+│       │   ├── create.blade.php             # Shared create/edit form
+│       │   ├── show.blade.php               # Detail view
+│       │   └── workload.blade.php           # Per-user workload grid with utilization % bars
 │       ├── settings/
 │       │   ├── index.blade.php
 │       │   ├── profile.blade.php
@@ -766,6 +817,18 @@ GET|PUT|DELETE    /finance/expenses/{id}             → show / edit / update / 
 POST              /finance/expenses/{id}/approve     → approve expense
 POST              /finance/expenses/{id}/reject      → reject expense
 
+GET|POST          /projects                           → list / create
+GET|PUT|DELETE    /projects/{id}                      → show / edit / update / delete
+POST              /projects/{id}/milestones           → add milestone
+PUT|DELETE        /projects/{id}/milestones/{mid}     → update / delete milestone
+POST              /projects/{id}/members              → add team member
+DELETE            /projects/{id}/members/{uid}        → remove team member
+POST              /opportunities/{id}/convert-to-project → create project from opportunity
+
+GET|POST          /timesheets                         → list / create
+GET|PUT|DELETE    /timesheets/{id}                    → show / edit / update / delete
+GET               /timesheets/workload                → resource workload view
+
 GET               /analytics                          → analytics dashboard
 POST              /analytics/dashboard/layout         → save widget layout (AJAX)
 POST              /analytics/dashboard/widget/toggle  → toggle widget visibility (AJAX)
@@ -843,6 +906,10 @@ PATCH /api/invoices/{id}/status       (update status)
 POST  /api/expenses/{id}/approve      (approve expense)
 POST  /api/expenses/{id}/reject       (reject expense)
 
+# Project & Delivery Management (protected)
+/api/projects        (CRUD)
+/api/timesheets      (CRUD)
+
 # Admin only (role:admin required)
 /api/users           (CRUD + sync-roles)
 /api/roles           (CRUD)
@@ -890,6 +957,9 @@ POST  /api/expenses/{id}/reject       (reject expense)
 | InvoiceLineItem | invoice_line_items | belongsTo Invoice/Product |
 | Payment | payments | belongsTo Invoice/createdBy |
 | Expense | expenses | belongsTo Opportunity/Account/user/approvedBy/createdBy |
+| Project | projects | belongsTo Opportunity/Account/Contact/manager/createdBy; hasMany Milestones/Timesheets; belongsToMany members (Users via project_members) |
+| ProjectMilestone | project_milestones | belongsTo Project/createdBy |
+| Timesheet | timesheets | belongsTo Project/User/createdBy |
 
 ---
 

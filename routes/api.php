@@ -32,6 +32,7 @@ use App\Http\Controllers\Api\InvoiceController;
 use App\Http\Controllers\Api\ExpenseController;
 use App\Http\Controllers\Api\ProjectController;
 use App\Http\Controllers\Api\TimesheetController;
+use App\Http\Controllers\Api\DocumentController;
 use App\Models\CampaignTargetList;
 use App\Models\WebFormSubmission;
 use Illuminate\Support\Facades\Route;
@@ -219,6 +220,13 @@ Route::name('api.')->middleware(['auth:sanctum', App\Http\Middleware\TenantScope
 
     // Timesheets
     Route::apiResource('timesheets', TimesheetController::class);
+
+    // =====================================================
+    // Document & Contract Management
+    // =====================================================
+
+    // Documents
+    Route::apiResource('documents', DocumentController::class);
 
     // Admin routes
     Route::middleware(['role:admin'])->group(function () {

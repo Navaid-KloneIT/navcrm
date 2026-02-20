@@ -36,6 +36,13 @@
         <button class="ncv-btn ncv-btn-sm" style="background:rgba(239,68,68,.3);color:#fca5a5;border:1px solid rgba(239,68,68,.3);">
           <i class="bi bi-x-circle"></i> Mark Lost
         </button>
+        <form method="POST" action="{{ route('opportunities.convert-to-project', $opportunity->id ?? 1) }}" style="display:inline;">
+          @csrf
+          <button type="submit" class="ncv-btn ncv-btn-sm" style="background:rgba(16,185,129,.2);color:#6ee7b7;border:1px solid rgba(16,185,129,.3);"
+            onclick="return confirm('Create a project from this opportunity?')">
+            <i class="bi bi-kanban"></i> Convert to Project
+          </button>
+        </form>
       </div>
     </div>
 

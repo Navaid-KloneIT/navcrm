@@ -19,6 +19,7 @@ class DatabaseSeeder extends Seeder
             ActivityDemoSeeder::class,
             FinanceDemoSeeder::class,
             ProjectDemoSeeder::class,
+            DocumentDemoSeeder::class,
         ]);
     }
 }

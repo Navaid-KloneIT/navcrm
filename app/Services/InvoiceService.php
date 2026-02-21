@@ -143,6 +143,9 @@ class InvoiceService
         } elseif ($amountPaid >= (float) $invoice->total) {
             $invoice->status = InvoiceStatus::Paid->value;
             $invoice->paid_at = now();
+
+            // Auto-deduct stock when invoice is fully paid
+            app(StockService::class)->deductForInvoice($invoice);
         } else {
             $invoice->status = InvoiceStatus::Partial->value;
         }

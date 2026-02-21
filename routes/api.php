@@ -34,6 +34,10 @@ use App\Http\Controllers\Api\ProjectController;
 use App\Http\Controllers\Api\TimesheetController;
 use App\Http\Controllers\Api\DocumentController;
 use App\Http\Controllers\Api\WorkflowController;
+use App\Http\Controllers\Api\OnboardingPipelineController;
+use App\Http\Controllers\Api\HealthScoreController;
+use App\Http\Controllers\Api\SurveyController;
+use App\Http\Controllers\Api\SurveyResponseController;
 use App\Models\CampaignTargetList;
 use App\Models\WebFormSubmission;
 use Illuminate\Support\Facades\Route;
@@ -231,6 +235,27 @@ Route::name('api.')->middleware(['auth:sanctum', App\Http\Middleware\TenantScope
 
     // Workflows
     Route::apiResource('workflows', WorkflowController::class);
+
+    // =====================================================
+    // Customer Success & Retention
+    // =====================================================
+
+    // Onboarding Pipelines
+    Route::apiResource('onboarding-pipelines', OnboardingPipelineController::class);
+    Route::patch('/onboarding-pipelines/{onboardingPipeline}/steps/{step}/toggle',
+        [OnboardingPipelineController::class, 'toggleStep']);
+
+    // Health Scores
+    Route::get('/health-scores', [HealthScoreController::class, 'index']);
+    Route::get('/health-scores/{account}', [HealthScoreController::class, 'show']);
+    Route::post('/health-scores/{account}/recalculate', [HealthScoreController::class, 'recalculate']);
+
+    // Surveys
+    Route::apiResource('surveys', SurveyController::class);
+    Route::get('/surveys/{survey}/responses', [SurveyController::class, 'responses']);
+
+    // Survey Responses
+    Route::apiResource('survey-responses', SurveyResponseController::class)->only(['index', 'store']);
 
     // Admin routes
     Route::middleware(['role:admin'])->group(function () {

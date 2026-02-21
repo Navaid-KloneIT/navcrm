@@ -70,16 +70,29 @@
 
   {{-- KPIs --}}
   <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:.875rem;margin-top:1.5rem;padding-top:1.25rem;border-top:1px solid rgba(255,255,255,.1);position:relative;z-index:1;">
+    @php
+      $hs = $account->latestHealthScore;
+      $hsValue = $hs ? $hs->overall_score : '—';
+      $hsColor = $hs ? ($hs->overall_score >= 70 ? '#86efac' : ($hs->overall_score >= 40 ? '#fde68a' : '#fca5a5')) : 'rgba(255,255,255,.6)';
+    @endphp
     @foreach([
       ['label'=>'Contacts',      'value'=>'12'],
       ['label'=>'Open Deals',    'value'=>'3'],
       ['label'=>'Open Quotes',   'value'=>'2'],
       ['label'=>'Activities',    'value'=>'47'],
       ['label'=>'Won Revenue',   'value'=>'$128k'],
+      ['label'=>'Health Score',  'value'=>$hsValue, 'color'=>$hsColor, 'link'=>route('success.health-scores.show', $account)],
     ] as $kpi)
     <div style="text-align:center;">
-      <div style="font-size:1.5rem;font-weight:800;color:#fff;letter-spacing:-.02em;">{{ $kpi['value'] }}</div>
-      <div style="font-size:.72rem;color:rgba(255,255,255,.6);font-weight:600;text-transform:uppercase;letter-spacing:.06em;">{{ $kpi['label'] }}</div>
+      @if(isset($kpi['link']))
+        <a href="{{ $kpi['link'] }}" style="text-decoration:none;">
+          <div style="font-size:1.5rem;font-weight:800;color:{{ $kpi['color'] ?? '#fff' }};letter-spacing:-.02em;">{{ $kpi['value'] }}</div>
+          <div style="font-size:.72rem;color:rgba(255,255,255,.6);font-weight:600;text-transform:uppercase;letter-spacing:.06em;">{{ $kpi['label'] }}</div>
+        </a>
+      @else
+        <div style="font-size:1.5rem;font-weight:800;color:#fff;letter-spacing:-.02em;">{{ $kpi['value'] }}</div>
+        <div style="font-size:.72rem;color:rgba(255,255,255,.6);font-weight:600;text-transform:uppercase;letter-spacing:.06em;">{{ $kpi['label'] }}</div>
+      @endif
     </div>
     @endforeach
   </div>

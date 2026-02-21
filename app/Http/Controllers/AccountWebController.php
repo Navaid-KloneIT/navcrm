@@ -78,7 +78,7 @@ class AccountWebController extends Controller
 
     public function show(Account $account): View
     {
-        $account->load(['owner', 'parent', 'children', 'contacts', 'addresses', 'activities.user', 'notes.user']);
+        $account->load(['owner', 'parent', 'children', 'contacts', 'addresses', 'activities.user', 'notes.user', 'latestHealthScore']);
 
         return view('accounts.show', compact('account'));
     }

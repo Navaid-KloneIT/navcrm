@@ -21,6 +21,7 @@ class DatabaseSeeder extends Seeder
             ProjectDemoSeeder::class,
             DocumentDemoSeeder::class,
             WorkflowDemoSeeder::class,
+            CustomerSuccessDemoSeeder::class,
         ]);
     }
 }

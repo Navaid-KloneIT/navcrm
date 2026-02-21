@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -80,5 +81,27 @@ class Account extends Model
     public function notes(): MorphMany
     {
         return $this->morphMany(Note::class, 'notable');
+    }
+
+    /* ── Customer Success ───────────────────────────────────────────── */
+
+    public function onboardingPipelines(): HasMany
+    {
+        return $this->hasMany(OnboardingPipeline::class);
+    }
+
+    public function healthScores(): HasMany
+    {
+        return $this->hasMany(HealthScore::class)->orderByDesc('calculated_at');
+    }
+
+    public function latestHealthScore(): HasOne
+    {
+        return $this->hasOne(HealthScore::class)->latestOfMany('calculated_at');
+    }
+
+    public function surveys(): HasMany
+    {
+        return $this->hasMany(Survey::class);
     }
 }

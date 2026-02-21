@@ -243,6 +243,48 @@
         </a>
       </div>
 
+      {{-- Customer Success --}}
+      <div class="ncv-nav-section">
+        <div class="ncv-nav-label">Customer Success</div>
+
+        <a href="{{ route('success.dashboard') }}"
+           class="ncv-nav-item {{ request()->routeIs('success.dashboard') ? 'active' : '' }}"
+           data-tooltip="CS Dashboard">
+          <svg class="ncv-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+          </svg>
+          <span class="ncv-nav-text">CS Dashboard</span>
+        </a>
+
+        <a href="{{ route('success.onboarding.index') }}"
+           class="ncv-nav-item {{ request()->routeIs('success.onboarding.*') ? 'active' : '' }}"
+           data-tooltip="Onboarding">
+          <svg class="ncv-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 11l3 3L22 4"/>
+            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+          </svg>
+          <span class="ncv-nav-text">Onboarding</span>
+        </a>
+
+        <a href="{{ route('success.health-scores.index') }}"
+           class="ncv-nav-item {{ request()->routeIs('success.health-scores.*') ? 'active' : '' }}"
+           data-tooltip="Health Scores">
+          <svg class="ncv-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+          </svg>
+          <span class="ncv-nav-text">Health Scores</span>
+        </a>
+
+        <a href="{{ route('success.surveys.index') }}"
+           class="ncv-nav-item {{ request()->routeIs('success.surveys.*') ? 'active' : '' }}"
+           data-tooltip="Surveys">
+          <svg class="ncv-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+          </svg>
+          <span class="ncv-nav-text">Surveys</span>
+        </a>
+      </div>
+
       {{-- Activity --}}
       <div class="ncv-nav-section">
         <div class="ncv-nav-label">Activity</div>

@@ -96,4 +96,9 @@ class Ticket extends Model
     {
         return $this->hasMany(TicketComment::class)->orderBy('created_at');
     }
+
+    public function surveys(): HasMany
+    {
+        return $this->hasMany(Survey::class);
+    }
 }

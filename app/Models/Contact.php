@@ -106,4 +106,16 @@ class Contact extends Model
     {
         return $this->hasMany(Ticket::class);
     }
+
+    /* ── Customer Success ───────────────────────────────────────────── */
+
+    public function onboardingPipelines(): HasMany
+    {
+        return $this->hasMany(OnboardingPipeline::class);
+    }
+
+    public function surveyResponses(): HasMany
+    {
+        return $this->hasMany(SurveyResponse::class);
+    }
 }

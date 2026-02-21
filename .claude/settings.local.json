@@ -27,7 +27,8 @@
       "Bash(test:*)",
       "Bash(\"e:/Web Projects/navcrm/README.md\":*)",
       "Bash(cmd //c:*)",
-      "Bash(findstr:*)"
+      "Bash(findstr:*)",
+      "Bash(/c/xampp8/mysql/bin/mysql.exe:*)"
     ]
   }
 }

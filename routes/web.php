@@ -36,6 +36,10 @@ use App\Http\Controllers\DocumentWebController;
 use App\Http\Controllers\DocumentSigningController;
 use App\Http\Controllers\WorkflowWebController;
 use App\Http\Controllers\ApprovalWebController;
+use App\Http\Controllers\OnboardingPipelineWebController;
+use App\Http\Controllers\HealthScoreWebController;
+use App\Http\Controllers\SurveyWebController;
+use App\Http\Controllers\SurveyPublicController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -454,6 +458,49 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/{quote}/reject',     [ApprovalWebController::class, 'reject'])->name('reject');
     });
 
+    // ── Customer Success & Retention ────────────────────────────────────
+    Route::prefix('success')->name('success.')->group(function () {
+
+        // CS Dashboard
+        Route::get('/dashboard', [HealthScoreWebController::class, 'dashboard'])->name('dashboard');
+
+        // Onboarding Pipelines
+        Route::resource('onboarding', OnboardingPipelineWebController::class)->names([
+            'index'   => 'onboarding.index',
+            'create'  => 'onboarding.create',
+            'store'   => 'onboarding.store',
+            'show'    => 'onboarding.show',
+            'edit'    => 'onboarding.edit',
+            'update'  => 'onboarding.update',
+            'destroy' => 'onboarding.destroy',
+        ]);
+        Route::post('/onboarding/{onboarding}/steps',
+            [OnboardingPipelineWebController::class, 'storeStep'])->name('onboarding.steps.store');
+        Route::post('/onboarding/{onboarding}/steps/{step}/toggle',
+            [OnboardingPipelineWebController::class, 'toggleStep'])->name('onboarding.steps.toggle');
+        Route::delete('/onboarding/{onboarding}/steps/{step}',
+            [OnboardingPipelineWebController::class, 'destroyStep'])->name('onboarding.steps.destroy');
+
+        // Health Scores
+        Route::get('/health-scores', [HealthScoreWebController::class, 'index'])->name('health-scores.index');
+        Route::get('/health-scores/{account}', [HealthScoreWebController::class, 'show'])->name('health-scores.show');
+        Route::post('/health-scores/{account}/recalculate',
+            [HealthScoreWebController::class, 'recalculate'])->name('health-scores.recalculate');
+        Route::post('/health-scores/recalculate-all',
+            [HealthScoreWebController::class, 'recalculateAll'])->name('health-scores.recalculate-all');
+
+        // Surveys
+        Route::resource('surveys', SurveyWebController::class)->names([
+            'index'   => 'surveys.index',
+            'create'  => 'surveys.create',
+            'store'   => 'surveys.store',
+            'show'    => 'surveys.show',
+            'edit'    => 'surveys.edit',
+            'update'  => 'surveys.update',
+            'destroy' => 'surveys.destroy',
+        ]);
+    });
+
     // ── Settings ──────────────────────────────────────────────────────────
     Route::prefix('settings')->name('settings.')->group(function () {
         Route::get('/',        [SettingsController::class, 'index'])->name('index');
@@ -477,3 +524,7 @@ Route::middleware(['auth'])->group(function () {
 // ─── Public Signing Portal (no auth required) ──────────────────────────────
 Route::get('/sign/{token}',  [DocumentSigningController::class, 'show'])->name('signing.show');
 Route::post('/sign/{token}', [DocumentSigningController::class, 'sign'])->name('signing.sign');
+
+// ─── Public Survey Response (no auth required) ─────────────────────────────
+Route::get('/survey/{token}',  [SurveyPublicController::class, 'show'])->name('survey.respond');
+Route::post('/survey/{token}', [SurveyPublicController::class, 'respond'])->name('survey.respond.store');

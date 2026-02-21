@@ -280,7 +280,73 @@
 
 
   // ─────────────────────────────────────────────────────────────────────────
-  // 12. TOOLTIP INIT (Bootstrap)
+  // 12. COLLAPSIBLE SIDEBAR SECTIONS
+  // ─────────────────────────────────────────────────────────────────────────
+  (function initCollapsibleNav() {
+    var STORAGE_KEY = 'ncv_collapsed_sections';
+
+    function getCollapsed() {
+      try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); }
+      catch (e) { return []; }
+    }
+
+    function saveCollapsed(list) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+    }
+
+    document.querySelectorAll('.ncv-nav-section').forEach(function (section) {
+      var label = section.querySelector('.ncv-nav-label');
+      if (!label) return;
+
+      var sectionId = label.textContent.trim().toLowerCase().replace(/\s+/g, '-');
+      section.dataset.section = sectionId;
+
+      // Wrap all nav-items inside a .ncv-nav-items container
+      var items = section.querySelectorAll('.ncv-nav-item');
+      if (items.length === 0) return;
+
+      var itemsWrap = document.createElement('div');
+      itemsWrap.className = 'ncv-nav-items';
+      items.forEach(function (item) { itemsWrap.appendChild(item); });
+      section.appendChild(itemsWrap);
+
+      // Add chevron indicator to label
+      var chevron = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      chevron.setAttribute('class', 'ncv-nav-chevron');
+      chevron.setAttribute('viewBox', '0 0 24 24');
+      chevron.setAttribute('fill', 'none');
+      chevron.setAttribute('stroke', 'currentColor');
+      chevron.setAttribute('stroke-width', '2.5');
+      var poly = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
+      poly.setAttribute('points', '6 9 12 15 18 9');
+      chevron.appendChild(poly);
+      label.appendChild(chevron);
+
+      // Restore collapsed state (keep open if section has active item)
+      var hasActive = itemsWrap.querySelector('.ncv-nav-item.active');
+      var collapsed = getCollapsed();
+      if (collapsed.indexOf(sectionId) !== -1 && !hasActive) {
+        section.classList.add('collapsed');
+      }
+
+      // Toggle on click
+      label.addEventListener('click', function () {
+        section.classList.toggle('collapsed');
+        var list = getCollapsed();
+        if (section.classList.contains('collapsed')) {
+          if (list.indexOf(sectionId) === -1) list.push(sectionId);
+        } else {
+          var idx = list.indexOf(sectionId);
+          if (idx > -1) list.splice(idx, 1);
+        }
+        saveCollapsed(list);
+      });
+    });
+  })();
+
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // 13. TOOLTIP INIT (Bootstrap)
   // ─────────────────────────────────────────────────────────────────────────
   if (typeof bootstrap !== 'undefined' && bootstrap.Tooltip) {
     document.querySelectorAll('[title]').forEach(function (el) {

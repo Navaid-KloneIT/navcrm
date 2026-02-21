@@ -482,6 +482,47 @@ Then open **http://localhost:8000** in your browser.
 - Active Onboarding Pipelines with progress bars
 - Recent Survey Responses feed
 
+### Inventory & Vendor Management
+
+#### Vendors
+- Auto-generated vendor numbers (`VN-XXXXX` format, tenant-scoped)
+- Company details: contact name, email, phone, address, city, state, country, postal code, website
+- Status workflow: Active / Inactive with color-coded badges
+- Portal access toggle with password management for vendor self-service
+- Purchase order history per vendor
+- Soft deletes
+
+#### Purchase Orders
+- Auto-generated PO numbers (`PO-XXXXX` format, tenant-scoped)
+- Status workflow: Draft → Submitted → Approved → Received / Cancelled
+- Line item builder with product selection, quantity, unit price, tax rate, and total
+- Approval workflow with approver tracking and timestamp
+- Receive workflow: mark items as received with per-item quantity tracking
+- Auto-increment stock on PO receipt via `StockService::addForPurchaseOrder()`
+- Expected date and received date tracking
+- Subtotal, tax, and total amount calculations
+- Linked to vendors and products
+
+#### Stock Tracking
+- Real-time stock quantity and reorder level per product
+- Low stock detection (`stock_quantity ≤ reorder_level`)
+- Color-coded stock bars (green/yellow/red) on stock index page
+- Immutable stock movement audit log (no soft deletes)
+- Movement types: Purchase In (success), Sale Out (danger), Adjustment (warning), Return In (info)
+- Polymorphic reference linking movements to Invoices or Purchase Orders
+- Auto-deduct stock when invoice is fully paid via `StockService::deductForInvoice()` (hooked into `InvoiceService::refreshPaymentStatus()`)
+- Manual stock adjustment form with notes and creator tracking
+- Filter by low stock and out of stock products
+
+#### Vendor Portal (Self-Service)
+- Standalone portal at `/vendor-portal` with its own Bootstrap 5 layout (no CRM sidebar)
+- Session-based portal authentication separate from staff auth
+- Vendor portal access enabled per-vendor via `portal_active` + `portal_password`
+- Dashboard with KPI cards (open POs, total PO value) and recent purchase orders
+- View purchase orders with line item details
+- Read-only stock check for all tenant products
+- Lead registration form: vendors can submit referral leads (first name, last name, email, phone, company, notes)
+
 ### Analytics & Reporting
 
 #### Analytics Dashboard
@@ -550,6 +591,9 @@ navcrm/
 │   │   ├── OnboardingStatus.php          # not_started, in_progress, completed, cancelled
 │   │   ├── SurveyType.php               # nps, csat
 │   │   ├── SurveyStatus.php             # draft, active, closed
+│   │   ├── VendorStatus.php              # active, inactive
+│   │   ├── PurchaseOrderStatus.php      # draft, submitted, approved, received, cancelled
+│   │   ├── StockMovementType.php        # purchase_in, sale_out, adjustment, return_in
 │   │   ├── WorkflowTrigger.php          # lead_status_changed|opportunity_stage_changed|quote_discount_exceeded|ticket_sla_breached
 │   │   ├── TaskPriority.php             # low, medium, high, urgent
 │   │   ├── TaskRecurrence.php           # daily, weekly, monthly, quarterly, yearly
@@ -581,6 +625,10 @@ navcrm/
 │   │   │   │   ├── HealthScoreController.php
 │   │   │   │   ├── SurveyController.php
 │   │   │   │   ├── SurveyResponseController.php
+│   │   │   │   ├── VendorController.php
+│   │   │   │   ├── PurchaseOrderController.php
+│   │   │   │   ├── StockMovementController.php
+│   │   │   │   ├── VendorPortalController.php
 │   │   │   │   ├── ForecastController.php
 │   │   │   │   ├── InvoiceController.php
 │   │   │   │   ├── KbArticleController.php
@@ -624,6 +672,10 @@ navcrm/
 │   │   │   ├── HealthScoreWebController.php
 │   │   │   ├── SurveyWebController.php
 │   │   │   ├── SurveyPublicController.php
+│   │   │   ├── VendorWebController.php
+│   │   │   ├── PurchaseOrderWebController.php
+│   │   │   ├── StockWebController.php
+│   │   │   ├── VendorPortalController.php
 │   │   │   ├── ForecastWebController.php
 │   │   │   ├── InvoiceWebController.php
 │   │   │   ├── KbArticleWebController.php
@@ -640,7 +692,9 @@ navcrm/
 │   │   │   └── WebFormWebController.php
 │   │   │
 │   │   ├── Middleware/
-│   │   │   └── TenantScope.php              # Enforces tenant isolation (API)
+│   │   │   ├── TenantScope.php              # Enforces tenant isolation (API)
+│   │   │   ├── PortalAuth.php               # Customer portal session auth
+│   │   │   └── VendorPortalAuth.php         # Vendor portal session auth
 │   │   │
 │   │   ├── Requests/                        # Form validation request classes
 │   │   │   ├── Account/
@@ -713,7 +767,11 @@ navcrm/
 │   │   ├── OnboardingStep.php
 │   │   ├── HealthScore.php
 │   │   ├── Survey.php
-│   │   └── SurveyResponse.php
+│   │   ├── SurveyResponse.php
+│   │   ├── Vendor.php
+│   │   ├── PurchaseOrder.php
+│   │   ├── PurchaseOrderItem.php
+│   │   └── StockMovement.php
 │   │
 │   ├── Observers/
 │   │   ├── LeadObserver.php               # Fires lead_status_changed trigger
@@ -736,10 +794,11 @@ navcrm/
 │       ├── QuoteCalculationService.php
 │       ├── QuotePdfService.php
 │       ├── AutomationEngine.php           # Workflow trigger evaluation, condition matching, job dispatch
-│       └── HealthScoreService.php        # Automated account health calculation (login, ticket, payment sub-scores)
+│       ├── HealthScoreService.php        # Automated account health calculation (login, ticket, payment sub-scores)
+│       └── StockService.php             # Stock deduction (invoice paid), addition (PO received), manual adjustment
 │
 ├── database/
-│   ├── migrations/                          # 45+ migration files
+│   ├── migrations/                          # 50+ migration files
 │   ├── factories/                           # Model factories for testing/seeding
 │   └── seeders/
 │       ├── DatabaseSeeder.php               # Calls RolePermissionSeeder + DemoDataSeeder
@@ -752,7 +811,8 @@ navcrm/
 │       ├── ProjectDemoSeeder.php            # Project & Delivery demo data (projects, milestones, members, timesheets)
 │       ├── DocumentDemoSeeder.php           # Document & Contract demo data (templates, documents, signatories)
 │       ├── WorkflowDemoSeeder.php          # Automation & Workflow demo data (6 workflows, runs, pending approval quote)
-│       └── CustomerSuccessDemoSeeder.php  # Customer Success demo data (pipelines, health scores, surveys, responses)
+│       ├── CustomerSuccessDemoSeeder.php  # Customer Success demo data (pipelines, health scores, surveys, responses)
+│       └── InventoryDemoSeeder.php        # Inventory demo data (5 vendors, 6 POs, stock levels, 14+ stock movements)
 │
 ├── resources/
 │   ├── css/
@@ -885,6 +945,25 @@ navcrm/
 │       │       ├── create.blade.php         # Two-column form (type, status, targeting)
 │       │       ├── show.blade.php           # NPS gauge / CSAT chart, public link, responses table
 │       │       └── respond.blade.php        # Public page (no auth), clickable score buttons, thank-you state
+│       ├── inventory/
+│       │   ├── vendors/
+│       │   │   ├── index.blade.php          # Stats cards, status chip filters, vendor table
+│       │   │   ├── create.blade.php         # Two-column form with portal access section
+│       │   │   └── show.blade.php           # Hero card, vendor details, purchase order history
+│       │   ├── purchase-orders/
+│       │   │   ├── index.blade.php          # Stats cards, status chip filters, PO table
+│       │   │   ├── create.blade.php         # Form with repeatable line items builder (vanilla JS)
+│       │   │   └── show.blade.php           # Hero, line items table, approve/receive actions, receive modal
+│       │   └── stock/
+│       │       ├── index.blade.php          # Stats (total/low/out), color-coded stock bars, filter bar
+│       │       └── show.blade.php           # Product hero, stock KPIs, movement history, manual adjust form
+│       ├── vendor-portal/
+│       │   ├── layout.blade.php             # Standalone Bootstrap 5 layout (no CRM sidebar)
+│       │   ├── login.blade.php              # Vendor portal login form
+│       │   ├── dashboard.blade.php          # KPI cards, recent POs, quick links
+│       │   ├── purchase-orders.blade.php    # PO list with line item details
+│       │   ├── stock-check.blade.php        # Read-only product stock table
+│       │   └── register-lead.blade.php      # Lead referral form
 │       ├── settings/
 │       │   ├── index.blade.php
 │       │   ├── profile.blade.php
@@ -1027,6 +1106,25 @@ GET|PUT|DELETE    /success/surveys/{id}                      → show / edit / u
 GET               /survey/{token}                            → public survey response form (no auth)
 POST              /survey/{token}                            → submit survey response (no auth)
 
+GET|POST          /inventory/vendors                      → list / create
+GET|PUT|DELETE    /inventory/vendors/{id}                → show / edit / update / delete
+GET|POST          /inventory/purchase-orders              → list / create
+GET|PUT|DELETE    /inventory/purchase-orders/{id}        → show / edit / update / delete
+POST              /inventory/purchase-orders/{id}/approve → approve PO
+POST              /inventory/purchase-orders/{id}/receive → mark received + add stock
+GET               /inventory/stock                       → all products with stock levels
+GET               /inventory/stock/{product}             → product stock movement history
+POST              /inventory/stock/{product}/adjust      → manual stock adjustment
+
+GET               /vendor-portal/login                   → vendor portal login form
+POST              /vendor-portal/login                   → vendor portal authenticate
+POST              /vendor-portal/logout                  → vendor portal sign out
+GET               /vendor-portal/dashboard               → vendor dashboard
+GET               /vendor-portal/purchase-orders         → vendor's POs
+GET               /vendor-portal/stock-check             → stock levels (read-only)
+GET               /vendor-portal/register-lead           → lead registration form
+POST              /vendor-portal/register-lead           → submit referral lead
+
 GET               /analytics                          → analytics dashboard
 POST              /analytics/dashboard/layout         → save widget layout (AJAX)
 POST              /analytics/dashboard/widget/toggle  → toggle widget visibility (AJAX)
@@ -1124,6 +1222,15 @@ POST  /api/health-scores/{account}/recalculate         (recalculate)
 GET   /api/surveys/{id}/responses                      (list responses)
 /api/survey-responses                                  (index, store)
 
+# Inventory & Vendor Management (protected)
+/api/vendors                                             (CRUD)
+/api/purchase-orders                                     (CRUD)
+POST  /api/purchase-orders/{id}/approve                  (approve PO)
+POST  /api/purchase-orders/{id}/receive                  (mark received + add stock)
+GET   /api/stock-movements                               (list all movements)
+GET   /api/stock-movements/{product}                     (product movement history)
+POST  /api/stock-movements/adjust                        (manual stock adjustment)
+
 # Admin only (role:admin required)
 /api/users           (CRUD + sync-roles)
 /api/roles           (CRUD)
@@ -1143,7 +1250,7 @@ GET   /api/surveys/{id}/responses                      (list responses)
 | Lead | leads | morphToMany Tags, morphMany Activities/Notes, belongsTo convertedContact/convertedAccount |
 | PipelineStage | pipeline_stages | hasMany Opportunities |
 | Opportunity | opportunities | belongsTo PipelineStage/Account/Contact, hasMany Quotes, belongsToMany teamMembers (Users) |
-| Product | products | hasMany PriceBookEntries, QuoteLineItems |
+| Product | products | hasMany PriceBookEntries, QuoteLineItems, StockMovements, PurchaseOrderItems; `is_low_stock` accessor |
 | PriceBook | price_books | hasMany Entries (PriceBookEntry) |
 | Quote | quotes | belongsTo Opportunity/Account/Contact, hasMany LineItems |
 | SalesTarget | sales_targets | belongsTo User |
@@ -1187,6 +1294,10 @@ GET   /api/surveys/{id}/responses                      (list responses)
 | HealthScore | health_scores | BelongsToTenant; belongsTo Account; computed `health_label`/`health_color`; immutable history (no SoftDeletes) |
 | Survey | surveys | BelongsToTenant+Filterable+SoftDeletes; belongsTo Account/Ticket/creator; hasMany SurveyResponses; computed `average_score`/`nps_score` |
 | SurveyResponse | survey_responses | BelongsToTenant; belongsTo Survey/Contact/Account |
+| Vendor | vendors | BelongsToTenant+Filterable+SoftDeletes; hasMany PurchaseOrders; portal_active + portal_password for vendor portal access |
+| PurchaseOrder | purchase_orders | BelongsToTenant+Filterable+SoftDeletes; belongsTo Vendor/creator/approver; hasMany PurchaseOrderItems; `items_total` accessor |
+| PurchaseOrderItem | purchase_order_items | belongsTo PurchaseOrder/Product; no tenant trait (inherits via PO) |
+| StockMovement | stock_movements | BelongsToTenant; belongsTo Product/creator; morphTo reference (Invoice/PurchaseOrder); immutable audit log (no SoftDeletes) |
 
 ---
 

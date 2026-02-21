@@ -445,6 +445,43 @@ Then open **http://localhost:8000** in your browser.
 - Marks tickets as breached and fires the `ticket_sla_breached` automation trigger
 - Works with existing SLA badge system (breach/warning indicators)
 
+### Customer Success & Retention
+
+#### Onboarding Pipelines
+- Auto-generated pipeline numbers (`OB-XXXXX` format, tenant-scoped)
+- Status workflow: Not Started → In Progress → Completed / Cancelled
+- Step-by-step checklist with interactive toggle (mark complete/incomplete)
+- Add, reorder, and remove steps inline on the pipeline show page
+- Computed progress percentage (% steps completed)
+- Assignee and due date tracking per pipeline and per step
+- Linked to Accounts and Contacts
+
+#### Health Scoring
+- Automated account health calculation (0–100 overall score)
+- Three sub-scores: Login/Engagement (30%), Ticket Health (35%), Payment Timeliness (35%)
+- Score labels: Healthy (70+), At Risk (40–69), Critical (0–39) with color coding
+- Historical score tracking (immutable records with `calculated_at` timestamp)
+- Recalculate single account or all accounts in bulk
+- Factors stored as JSON for drill-down analysis
+- CS Dashboard with at-risk accounts widget and KPI summary
+
+#### Surveys & Feedback (NPS/CSAT)
+- Two survey types: NPS (Net Promoter Score) and CSAT (Customer Satisfaction)
+- Auto-generated survey numbers (`SV-XXXXX` format, tenant-scoped)
+- Status workflow: Draft → Active → Closed
+- Token-based public response URL (`/survey/{token}`) — no login required
+- Clickable 0–10 score selector with optional comment
+- NPS score calculation: (% Promoters[9-10] − % Detractors[0-6]) × 100
+- CSAT average score and distribution breakdown
+- Response tracking linked to Contacts and Accounts
+- Optional ticket association for post-resolution CSAT surveys
+
+#### Customer Success Dashboard
+- Hero KPI row: Active Onboarding, Avg Health Score, NPS Score, Avg CSAT
+- At-Risk Accounts table (health score < 60)
+- Active Onboarding Pipelines with progress bars
+- Recent Survey Responses feed
+
 ### Analytics & Reporting
 
 #### Analytics Dashboard
@@ -510,6 +547,9 @@ navcrm/
 │   │   ├── LeadStatus.php
 │   │   ├── OpportunitySource.php
 │   │   ├── QuoteStatus.php              # draft|sent|accepted|rejected|expired|pending_approval|approved
+│   │   ├── OnboardingStatus.php          # not_started, in_progress, completed, cancelled
+│   │   ├── SurveyType.php               # nps, csat
+│   │   ├── SurveyStatus.php             # draft, active, closed
 │   │   ├── WorkflowTrigger.php          # lead_status_changed|opportunity_stage_changed|quote_discount_exceeded|ticket_sla_breached
 │   │   ├── TaskPriority.php             # low, medium, high, urgent
 │   │   ├── TaskRecurrence.php           # daily, weekly, monthly, quarterly, yearly
@@ -537,6 +577,10 @@ navcrm/
 │   │   │   └── TimesheetController.php
 │   │   │   ├── DocumentController.php
 │   │   │   │   ├── WorkflowController.php
+│   │   │   │   ├── OnboardingPipelineController.php
+│   │   │   │   ├── HealthScoreController.php
+│   │   │   │   ├── SurveyController.php
+│   │   │   │   ├── SurveyResponseController.php
 │   │   │   │   ├── ForecastController.php
 │   │   │   │   ├── InvoiceController.php
 │   │   │   │   ├── KbArticleController.php
@@ -576,6 +620,10 @@ navcrm/
 │   │   │   ├── DocumentSigningController.php
 │   │   │   ├── WorkflowWebController.php
 │   │   │   ├── ApprovalWebController.php
+│   │   │   ├── OnboardingPipelineWebController.php
+│   │   │   ├── HealthScoreWebController.php
+│   │   │   ├── SurveyWebController.php
+│   │   │   ├── SurveyPublicController.php
 │   │   │   ├── ForecastWebController.php
 │   │   │   ├── InvoiceWebController.php
 │   │   │   ├── KbArticleWebController.php
@@ -660,7 +708,12 @@ navcrm/
 │   │   ├── Workflow.php
 │   │   ├── WorkflowCondition.php
 │   │   ├── WorkflowAction.php
-│   │   └── WorkflowRun.php
+│   │   ├── WorkflowRun.php
+│   │   ├── OnboardingPipeline.php
+│   │   ├── OnboardingStep.php
+│   │   ├── HealthScore.php
+│   │   ├── Survey.php
+│   │   └── SurveyResponse.php
 │   │
 │   ├── Observers/
 │   │   ├── LeadObserver.php               # Fires lead_status_changed trigger
@@ -682,10 +735,11 @@ navcrm/
 │       ├── LeadConversionService.php
 │       ├── QuoteCalculationService.php
 │       ├── QuotePdfService.php
-│       └── AutomationEngine.php           # Workflow trigger evaluation, condition matching, job dispatch
+│       ├── AutomationEngine.php           # Workflow trigger evaluation, condition matching, job dispatch
+│       └── HealthScoreService.php        # Automated account health calculation (login, ticket, payment sub-scores)
 │
 ├── database/
-│   ├── migrations/                          # 40+ migration files
+│   ├── migrations/                          # 45+ migration files
 │   ├── factories/                           # Model factories for testing/seeding
 │   └── seeders/
 │       ├── DatabaseSeeder.php               # Calls RolePermissionSeeder + DemoDataSeeder
@@ -697,7 +751,8 @@ navcrm/
 │       ├── FinanceDemoSeeder.php            # Finance & Billing demo data (tax rates, invoices, payments, expenses)
 │       ├── ProjectDemoSeeder.php            # Project & Delivery demo data (projects, milestones, members, timesheets)
 │       ├── DocumentDemoSeeder.php           # Document & Contract demo data (templates, documents, signatories)
-│       └── WorkflowDemoSeeder.php          # Automation & Workflow demo data (6 workflows, runs, pending approval quote)
+│       ├── WorkflowDemoSeeder.php          # Automation & Workflow demo data (6 workflows, runs, pending approval quote)
+│       └── CustomerSuccessDemoSeeder.php  # Customer Success demo data (pipelines, health scores, surveys, responses)
 │
 ├── resources/
 │   ├── css/
@@ -816,6 +871,20 @@ navcrm/
 │       │   └── _action_config.blade.php     # Action config partial (email/assign/status/webhook panels)
 │       ├── approvals/
 │       │   └── index.blade.php              # Pending quotes table with approve/reject actions
+│       ├── success/
+│       │   ├── dashboard.blade.php          # CS overview: KPI hero, at-risk accounts, active pipelines, recent responses
+│       │   ├── onboarding/
+│       │   │   ├── index.blade.php          # Stats cards, filter toolbar, pipeline table with progress bars
+│       │   │   ├── create.blade.php         # Two-column form with repeatable steps builder (vanilla JS)
+│       │   │   └── show.blade.php           # Hero header, details sidebar, interactive step checklist
+│       │   ├── health-scores/
+│       │   │   ├── index.blade.php          # Stats cards, color-coded score table, recalculate buttons
+│       │   │   └── show.blade.php           # Account hero, score breakdown cards, Chart.js history chart
+│       │   └── surveys/
+│       │       ├── index.blade.php          # Stats, filter toolbar, surveys table
+│       │       ├── create.blade.php         # Two-column form (type, status, targeting)
+│       │       ├── show.blade.php           # NPS gauge / CSAT chart, public link, responses table
+│       │       └── respond.blade.php        # Public page (no auth), clickable score buttons, thank-you state
 │       ├── settings/
 │       │   ├── index.blade.php
 │       │   ├── profile.blade.php
@@ -943,6 +1012,21 @@ GET               /approvals                          → pending quote approval
 POST              /approvals/{id}/approve             → approve quote
 POST              /approvals/{id}/reject              → reject quote
 
+GET               /success/dashboard                          → CS dashboard
+GET|POST          /success/onboarding                        → list / create pipeline
+GET|PUT|DELETE    /success/onboarding/{id}                   → show / edit / update / delete
+POST              /success/onboarding/{id}/steps             → add step
+POST              /success/onboarding/{id}/steps/{step}/toggle → toggle step completion
+DELETE            /success/onboarding/{id}/steps/{step}      → remove step
+GET               /success/health-scores                     → all accounts with scores
+GET               /success/health-scores/{account}           → account score detail
+POST              /success/health-scores/{account}/recalculate → recalculate single
+POST              /success/health-scores/recalculate-all     → recalculate all accounts
+GET|POST          /success/surveys                           → list / create survey
+GET|PUT|DELETE    /success/surveys/{id}                      → show / edit / update / delete
+GET               /survey/{token}                            → public survey response form (no auth)
+POST              /survey/{token}                            → submit survey response (no auth)
+
 GET               /analytics                          → analytics dashboard
 POST              /analytics/dashboard/layout         → save widget layout (AJAX)
 POST              /analytics/dashboard/widget/toggle  → toggle widget visibility (AJAX)
@@ -1030,6 +1114,16 @@ POST  /api/expenses/{id}/reject       (reject expense)
 # Automation & Workflow Engine (protected)
 /api/workflows       (CRUD)
 
+# Customer Success & Retention (protected)
+/api/onboarding-pipelines                              (CRUD)
+PATCH /api/onboarding-pipelines/{id}/steps/{step}/toggle (toggle step)
+GET   /api/health-scores                               (list all account scores)
+GET   /api/health-scores/{account}                     (score history)
+POST  /api/health-scores/{account}/recalculate         (recalculate)
+/api/surveys                                           (CRUD)
+GET   /api/surveys/{id}/responses                      (list responses)
+/api/survey-responses                                  (index, store)
+
 # Admin only (role:admin required)
 /api/users           (CRUD + sync-roles)
 /api/roles           (CRUD)
@@ -1088,6 +1182,11 @@ POST  /api/expenses/{id}/reject       (reject expense)
 | WorkflowCondition | workflow_conditions | belongsTo Workflow; field/operator/value for AND-logic matching |
 | WorkflowAction | workflow_actions | belongsTo Workflow; action_config JSON; types: send_email/assign_user/change_status/send_webhook |
 | WorkflowRun | workflow_runs | belongsTo Workflow; audit log with context_data, actions_log JSON, status tracking |
+| OnboardingPipeline | onboarding_pipelines | BelongsToTenant+Filterable+SoftDeletes; belongsTo Account/Contact/assignee/creator; hasMany Steps; computed `progress` attribute |
+| OnboardingStep | onboarding_steps | belongsTo OnboardingPipeline/completedByUser; no tenant trait (inherits via pipeline) |
+| HealthScore | health_scores | BelongsToTenant; belongsTo Account; computed `health_label`/`health_color`; immutable history (no SoftDeletes) |
+| Survey | surveys | BelongsToTenant+Filterable+SoftDeletes; belongsTo Account/Ticket/creator; hasMany SurveyResponses; computed `average_score`/`nps_score` |
+| SurveyResponse | survey_responses | BelongsToTenant; belongsTo Survey/Contact/Account |
 
 ---
 

@@ -40,6 +40,10 @@ use App\Http\Controllers\OnboardingPipelineWebController;
 use App\Http\Controllers\HealthScoreWebController;
 use App\Http\Controllers\SurveyWebController;
 use App\Http\Controllers\SurveyPublicController;
+use App\Http\Controllers\VendorWebController;
+use App\Http\Controllers\PurchaseOrderWebController;
+use App\Http\Controllers\StockWebController;
+use App\Http\Controllers\VendorPortalController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -501,6 +505,41 @@ Route::middleware(['auth'])->group(function () {
         ]);
     });
 
+    // ── Inventory & Vendor Management ────────────────────────────────────
+    Route::prefix('inventory')->name('inventory.')->group(function () {
+
+        // Vendors
+        Route::resource('vendors', VendorWebController::class)->names([
+            'index'   => 'vendors.index',
+            'create'  => 'vendors.create',
+            'store'   => 'vendors.store',
+            'show'    => 'vendors.show',
+            'edit'    => 'vendors.edit',
+            'update'  => 'vendors.update',
+            'destroy' => 'vendors.destroy',
+        ]);
+
+        // Purchase Orders
+        Route::resource('purchase-orders', PurchaseOrderWebController::class)->names([
+            'index'   => 'purchase-orders.index',
+            'create'  => 'purchase-orders.create',
+            'store'   => 'purchase-orders.store',
+            'show'    => 'purchase-orders.show',
+            'edit'    => 'purchase-orders.edit',
+            'update'  => 'purchase-orders.update',
+            'destroy' => 'purchase-orders.destroy',
+        ]);
+        Route::post('/purchase-orders/{purchaseOrder}/approve',
+            [PurchaseOrderWebController::class, 'approve'])->name('purchase-orders.approve');
+        Route::post('/purchase-orders/{purchaseOrder}/receive',
+            [PurchaseOrderWebController::class, 'receive'])->name('purchase-orders.receive');
+
+        // Stock
+        Route::get('/stock',                   [StockWebController::class, 'index'])->name('stock.index');
+        Route::get('/stock/{product}',         [StockWebController::class, 'show'])->name('stock.show');
+        Route::post('/stock/{product}/adjust', [StockWebController::class, 'adjust'])->name('stock.adjust');
+    });
+
     // ── Settings ──────────────────────────────────────────────────────────
     Route::prefix('settings')->name('settings.')->group(function () {
         Route::get('/',        [SettingsController::class, 'index'])->name('index');
@@ -528,3 +567,18 @@ Route::post('/sign/{token}', [DocumentSigningController::class, 'sign'])->name('
 // ─── Public Survey Response (no auth required) ─────────────────────────────
 Route::get('/survey/{token}',  [SurveyPublicController::class, 'show'])->name('survey.respond');
 Route::post('/survey/{token}', [SurveyPublicController::class, 'respond'])->name('survey.respond.store');
+
+// ─── Vendor Portal (no main-app auth) ──────────────────────────────────────
+Route::prefix('vendor-portal')->name('vendor-portal.')->group(function () {
+    Route::get('/login',  [VendorPortalController::class, 'showLogin'])->name('login');
+    Route::post('/login', [VendorPortalController::class, 'login'])->name('login.submit');
+    Route::post('/logout',[VendorPortalController::class, 'logout'])->name('logout');
+
+    Route::middleware('vendor-portal.auth')->group(function () {
+        Route::get('/dashboard',       [VendorPortalController::class, 'dashboard'])->name('dashboard');
+        Route::get('/purchase-orders', [VendorPortalController::class, 'purchaseOrders'])->name('purchase-orders');
+        Route::get('/stock-check',     [VendorPortalController::class, 'stockCheck'])->name('stock-check');
+        Route::get('/register-lead',   [VendorPortalController::class, 'registerLead'])->name('register-lead');
+        Route::post('/register-lead',  [VendorPortalController::class, 'storeLead'])->name('register-lead.store');
+    });
+});

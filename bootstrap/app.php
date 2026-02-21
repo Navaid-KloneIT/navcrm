@@ -18,6 +18,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'tenant'            => \App\Http\Middleware\TenantScope::class,
             'portal.auth'       => \App\Http\Middleware\PortalAuth::class,
+            'vendor-portal.auth'=> \App\Http\Middleware\VendorPortalAuth::class,
             'role'              => \Spatie\Permission\Middleware\RoleMiddleware::class,
             'permission'        => \Spatie\Permission\Middleware\PermissionMiddleware::class,
             'role_or_permission'=> \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,

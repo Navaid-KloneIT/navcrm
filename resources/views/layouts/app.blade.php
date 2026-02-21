@@ -411,6 +411,45 @@
         </a>
       </div>
 
+      {{-- Inventory --}}
+      <div class="ncv-nav-section">
+        <div class="ncv-nav-label">Inventory</div>
+
+        <a href="{{ route('inventory.vendors.index') }}"
+           class="ncv-nav-item {{ request()->routeIs('inventory.vendors.*') ? 'active' : '' }}"
+           data-tooltip="Vendors">
+          <svg class="ncv-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="8.5" cy="7" r="4"/>
+            <path d="M20 8v6"/>
+            <path d="M23 11h-6"/>
+          </svg>
+          <span class="ncv-nav-text">Vendors</span>
+        </a>
+
+        <a href="{{ route('inventory.purchase-orders.index') }}"
+           class="ncv-nav-item {{ request()->routeIs('inventory.purchase-orders.*') ? 'active' : '' }}"
+           data-tooltip="Purchase Orders">
+          <svg class="ncv-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+            <line x1="3" y1="6" x2="21" y2="6"/>
+            <path d="M16 10a4 4 0 0 1-8 0"/>
+          </svg>
+          <span class="ncv-nav-text">Purchase Orders</span>
+        </a>
+
+        <a href="{{ route('inventory.stock.index') }}"
+           class="ncv-nav-item {{ request()->routeIs('inventory.stock.*') ? 'active' : '' }}"
+           data-tooltip="Stock">
+          <svg class="ncv-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="12 2 2 7 12 12 22 7 12 2"/>
+            <polyline points="2 17 12 22 22 17"/>
+            <polyline points="2 12 12 17 22 12"/>
+          </svg>
+          <span class="ncv-nav-text">Stock</span>
+        </a>
+      </div>
+
       {{-- Projects & Delivery --}}
       <div class="ncv-nav-section">
         <div class="ncv-nav-label">Projects</div>

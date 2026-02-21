@@ -283,23 +283,9 @@
   // 12. COLLAPSIBLE SIDEBAR SECTIONS
   // ─────────────────────────────────────────────────────────────────────────
   (function initCollapsibleNav() {
-    var STORAGE_KEY = 'ncv_collapsed_sections';
-
-    function getCollapsed() {
-      try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); }
-      catch (e) { return []; }
-    }
-
-    function saveCollapsed(list) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
-    }
-
     document.querySelectorAll('.ncv-nav-section').forEach(function (section) {
       var label = section.querySelector('.ncv-nav-label');
       if (!label) return;
-
-      var sectionId = label.textContent.trim().toLowerCase().replace(/\s+/g, '-');
-      section.dataset.section = sectionId;
 
       // Wrap all nav-items inside a .ncv-nav-items container
       var items = section.querySelectorAll('.ncv-nav-item');
@@ -322,24 +308,15 @@
       chevron.appendChild(poly);
       label.appendChild(chevron);
 
-      // Restore collapsed state (keep open if section has active item)
+      // Collapse all sections except the one with the active page
       var hasActive = itemsWrap.querySelector('.ncv-nav-item.active');
-      var collapsed = getCollapsed();
-      if (collapsed.indexOf(sectionId) !== -1 && !hasActive) {
+      if (!hasActive) {
         section.classList.add('collapsed');
       }
 
       // Toggle on click
       label.addEventListener('click', function () {
         section.classList.toggle('collapsed');
-        var list = getCollapsed();
-        if (section.classList.contains('collapsed')) {
-          if (list.indexOf(sectionId) === -1) list.push(sectionId);
-        } else {
-          var idx = list.indexOf(sectionId);
-          if (idx > -1) list.splice(idx, 1);
-        }
-        saveCollapsed(list);
       });
     });
   })();

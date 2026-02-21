@@ -38,6 +38,9 @@ use App\Http\Controllers\Api\OnboardingPipelineController;
 use App\Http\Controllers\Api\HealthScoreController;
 use App\Http\Controllers\Api\SurveyController;
 use App\Http\Controllers\Api\SurveyResponseController;
+use App\Http\Controllers\Api\VendorController;
+use App\Http\Controllers\Api\PurchaseOrderController;
+use App\Http\Controllers\Api\StockMovementController;
 use App\Models\CampaignTargetList;
 use App\Models\WebFormSubmission;
 use Illuminate\Support\Facades\Route;
@@ -256,6 +259,23 @@ Route::name('api.')->middleware(['auth:sanctum', App\Http\Middleware\TenantScope
 
     // Survey Responses
     Route::apiResource('survey-responses', SurveyResponseController::class)->only(['index', 'store']);
+
+    // =====================================================
+    // Inventory & Vendor Management
+    // =====================================================
+
+    // Vendors
+    Route::apiResource('vendors', VendorController::class);
+
+    // Purchase Orders
+    Route::apiResource('purchase-orders', PurchaseOrderController::class);
+    Route::post('/purchase-orders/{purchaseOrder}/approve', [PurchaseOrderController::class, 'approve']);
+    Route::post('/purchase-orders/{purchaseOrder}/receive', [PurchaseOrderController::class, 'receive']);
+
+    // Stock Movements
+    Route::get('/stock-movements', [StockMovementController::class, 'index']);
+    Route::get('/stock-movements/{product}', [StockMovementController::class, 'show']);
+    Route::post('/stock-movements/adjust', [StockMovementController::class, 'adjust']);
 
     // Admin routes
     Route::middleware(['role:admin'])->group(function () {
